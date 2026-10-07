@@ -316,9 +316,8 @@ retroactively generate a spoiler file for a non-spoiler seed.</value>
 	<data name="GenerateRequirementGraphToolTip" xml:space="preserve">
 <value>Generates a requirements.json file alongside the randomized ROM.
 
-The file is a graph of the overworld, towns and palaces starting from the North Palace. Each connection
-lists the items and spells needed to cross it, so you can work out what is required to reach any item
-location or palace boss.
+For every item location and palace boss, the file lists the minimal routes from the North Palace:
+the locations passed through and the items and spells each route requires.
 
 It describes the logic only and does not reveal which items are placed where. It does not change the seed.</value>
 	</data>

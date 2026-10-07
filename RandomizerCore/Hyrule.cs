@@ -2839,6 +2839,17 @@ public class Hyrule
             RequirementGraphSerializationContext.Default.RequirementGraph);
     }
 
+    /// <summary>
+    /// JSON listing, for every item location and palace boss, the minimal routes from the North Palace and
+    /// the requirements each route needs.
+    /// </summary>
+    public string GenerateRequirementRoutes()
+    {
+        return System.Text.Json.JsonSerializer.Serialize(
+            RequirementGraphBuilder.BuildRoutes(RequirementGraphBuilder.Build(worlds, props)),
+            RequirementGraphSerializationContext.Default.RequirementRoutes);
+    }
+
     public string GenerateSpoiler()
     {
         StringBuilder sb = new StringBuilder();

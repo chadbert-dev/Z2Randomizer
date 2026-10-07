@@ -65,6 +65,25 @@ public record RequirementGraph(
     List<GraphNode> Nodes,
     List<GraphEdge> Edges);
 
+/// <param name="Requirements">Everything that has to be held to take this route (RequirementTypes, plus RAFT).</param>
+/// <param name="Route">Ids of the nodes visited, in order, from the start node to the target.</param>
+public record TargetRoute(string[] Requirements, string[] Route);
+
+/// <param name="Routes">
+/// Alternative routes, none of which needs a superset of another's requirements. Empty if the target
+/// cannot be reached at all.
+/// </param>
+public record TargetAccess(string Target, string Name, GraphNodeKind Kind, bool HasItem, bool IsBoss, List<TargetRoute> Routes);
+
+public record RequirementRoutes(
+    string? Seed,
+    string? Flags,
+    bool MarioMode,
+    string Description,
+    string StartNode,
+    List<GraphNode> Nodes,
+    List<TargetAccess> Targets);
+
 [JsonSourceGenerationOptions(
     UseStringEnumConverter = true,
     WriteIndented = true,
@@ -72,6 +91,7 @@ public record RequirementGraph(
     DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
 )]
 [JsonSerializable(typeof(RequirementGraph))]
+[JsonSerializable(typeof(RequirementRoutes))]
 public partial class RequirementGraphSerializationContext : JsonSerializerContext { }
 
 /// <summary>
@@ -370,7 +390,7 @@ public static class RequirementGraphBuilder
                 {
                     next.Add(map.Left);
                 }
-                foreach (var target in next.OfType<TownMap>())
+                foreach (var target in next.OfType<TownMap>().Distinct())
                 {
                     AddEdge(MapId(map), MapId(target), GraphEdgeKind.Town, target.AccessRequirements.ToClauses());
                     if (visited.Add(target))
@@ -420,5 +440,94 @@ public static class RequirementGraphBuilder
     public static RequirementGraph Build(IReadOnlyList<World> worlds, RandomizerProperties props)
     {
         return new Builder(worlds, props).Build();
+    }
+
+    private const string ROUTES_DESCRIPTION =
+        "For every node that holds an item (hasItem) or is a palace boss (isBoss), the minimal routes from startNode. "
+        + "A route can be taken when every requirement in its requirements list is held. Routes with more requirements "
+        + "than another route to the same target are left out. nodes only lists the nodes used by a route or target. "
+        + "Item identities are not included.";
+
+    /// <summary>
+    /// For every item and boss node, the routes from the start that need the fewest requirements. Each route is the
+    /// shortest path (in nodes) for its requirement set.
+    /// </summary>
+    public static RequirementRoutes BuildRoutes(RequirementGraph graph)
+    {
+        var outgoing = graph.Edges.ToLookup(e => e.From);
+        // keyed by reference: records compare by value, and identical parallel edges are legal
+        var edgeClauses = new Dictionary<GraphEdge, List<HashSet<string>>>(ReferenceEqualityComparer.Instance);
+        foreach (var e in graph.Edges)
+        {
+            var required = e.RequiredItems ?? [];
+            string[][] alternatives = e.Requirements.Length == 0 ? [[]] : e.Requirements;
+            edgeClauses[e] = alternatives.Select(a => new HashSet<string>(a.Concat(required))).ToList();
+        }
+
+        Dictionary<string, List<(HashSet<string> reqs, List<string> path)>> best = [];
+        Queue<string> pending = new([graph.StartNode]);
+        HashSet<string> queued = [graph.StartNode];
+        best[graph.StartNode] = [([], [graph.StartNode])];
+
+        bool TryAdd(string node, HashSet<string> reqs, List<string> path)
+        {
+            if (!best.TryGetValue(node, out var routes))
+            {
+                best[node] = routes = [];
+            }
+            if (routes.Any(r => r.reqs.IsSubsetOf(reqs) && (r.reqs.Count < reqs.Count || r.path.Count <= path.Count)))
+            {
+                return false;
+            }
+            routes.RemoveAll(r => reqs.IsSubsetOf(r.reqs));
+            routes.Add((reqs, path));
+            return true;
+        }
+
+        while (pending.Count > 0)
+        {
+            string from = pending.Dequeue();
+            queued.Remove(from);
+            foreach (var (reqs, path) in best[from].ToList())
+            {
+                foreach (var edge in outgoing[from])
+                {
+                    if (path.Contains(edge.To))
+                    {
+                        continue;
+                    }
+                    foreach (var clause in edgeClauses[edge])
+                    {
+                        HashSet<string> newReqs = [.. reqs];
+                        newReqs.UnionWith(clause);
+                        if (TryAdd(edge.To, newReqs, [.. path, edge.To]) && queued.Add(edge.To))
+                        {
+                            pending.Enqueue(edge.To);
+                        }
+                    }
+                }
+            }
+        }
+
+        var nodesById = graph.Nodes.ToDictionary(n => n.Id);
+        List<TargetAccess> targets = [];
+        HashSet<string> usedNodes = [graph.StartNode];
+        foreach (var node in graph.Nodes.Where(n => n.HasItem || n.IsBoss))
+        {
+            var routes = best.TryGetValue(node.Id, out var found) ? found : [];
+            var targetRoutes = routes
+                .OrderBy(r => r.reqs.Count).ThenBy(r => r.path.Count).ThenBy(r => string.Join(",", r.reqs.Order()))
+                .Select(r => new TargetRoute(r.reqs.Order().ToArray(), r.path.ToArray()))
+                .ToList();
+            usedNodes.Add(node.Id);
+            foreach (var route in targetRoutes)
+            {
+                usedNodes.UnionWith(route.Route);
+            }
+            targets.Add(new TargetAccess(node.Id, node.Name, node.Kind, node.HasItem, node.IsBoss, targetRoutes));
+        }
+
+        return new RequirementRoutes(graph.Seed, graph.Flags, graph.MarioMode, ROUTES_DESCRIPTION, graph.StartNode,
+            graph.Nodes.Where(n => usedNodes.Contains(n.Id)).ToList(), targets);
     }
 }

@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-- Added a "Generate Requirements Graph" option (Hints tab) that writes a `_requirements.json` file mapping the requirements to reach every location, item and palace boss from the North Palace.
+- Added a "Generate Requirements Graph" option (Hints tab) that writes a `_requirements.json` file listing the minimal routes and requirements to reach every item location and palace boss from the North Palace.
 
 ## Version 5.2.4 - September 26, 2026
 

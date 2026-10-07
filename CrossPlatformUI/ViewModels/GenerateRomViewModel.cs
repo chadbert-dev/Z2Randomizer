@@ -151,7 +151,7 @@ Seed: {config.Seed}
                         if (config.GenerateRequirementGraph)
                         {
                             var graphFilename = basename + "_requirements.json";
-                            await files.SaveSpoilerFile(graphFilename, randomizer.GenerateRequirementGraph(), Main.OutputFilePath);
+                            await files.SaveSpoilerFile(graphFilename, randomizer.GenerateRequirementRoutes(), Main.OutputFilePath);
                         }
                         ProgressHeading = "Generation Complete";
                         ProgressBody = $"Hash: {randomizer.Hash}\n\nFile: {filename}";
