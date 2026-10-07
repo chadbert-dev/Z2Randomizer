@@ -2829,6 +2829,16 @@ public class Hyrule
         */
     }
 
+    /// <summary>
+    /// JSON graph of the requirements to reach every location, item and palace boss, starting from the North Palace.
+    /// </summary>
+    public string GenerateRequirementGraph()
+    {
+        return System.Text.Json.JsonSerializer.Serialize(
+            RequirementGraphBuilder.Build(worlds, props),
+            RequirementGraphSerializationContext.Default.RequirementGraph);
+    }
+
     public string GenerateSpoiler()
     {
         StringBuilder sb = new StringBuilder();

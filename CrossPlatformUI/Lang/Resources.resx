@@ -313,6 +313,15 @@ wizard.</value>
 ⚠️ A spoiler seed is generated differently from a non-spoiler seed. It is not possible to
 retroactively generate a spoiler file for a non-spoiler seed.</value>
 	</data>
+	<data name="GenerateRequirementGraphToolTip" xml:space="preserve">
+<value>Generates a requirements.json file alongside the randomized ROM.
+
+The file is a graph of the overworld, towns and palaces starting from the North Palace. Each connection
+lists the items and spells needed to cross it, so you can work out what is required to reach any item
+location or palace boss.
+
+It describes the logic only and does not reveal which items are placed where. It does not change the seed.</value>
+	</data>
 	<data name="RevealWalkthroughWallsToolTip" xml:space="preserve">
 <value>Replaces all false wall and floor tiles with background tiles.</value>
 	</data>

@@ -61,6 +61,10 @@
                       Content="Generate Spoiler">
                 <ToolTip.Tip><TextBlock Text="{x:Static lang:Resources.GenerateSpoilerToolTip}"/></ToolTip.Tip>
             </CheckBox>
+            <CheckBox IsChecked="{Binding Main.Config.GenerateRequirementGraph}"
+                      Content="Generate Requirements Graph">
+                <ToolTip.Tip><TextBlock Text="{x:Static lang:Resources.GenerateRequirementGraphToolTip}"/></ToolTip.Tip>
+            </CheckBox>
             <CheckBox
                 Classes.DifficultyOnly="{Binding Main.Config.ShareSeedAcrossDifficulty}"
                 IsChecked="{Binding Main.Config.RevealWalkthroughWalls}"

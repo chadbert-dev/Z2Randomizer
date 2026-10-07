@@ -828,6 +828,10 @@ public sealed partial class RandomizerConfiguration() : INotifyPropertyChanged
     private bool generateSpoiler = false;
 
     [Reactive]
+    [IgnoreInFlags]
+    private bool generateRequirementGraph = false;
+
+    [Reactive]
     [DifficultyOnly]
     private bool revealWalkthroughWalls = false;
 

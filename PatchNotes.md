@@ -1,5 +1,9 @@
 # Z2Randomizer Changelog
 
+## Unreleased
+
+- Added a "Generate Requirements Graph" option (Hints tab) that writes a `_requirements.json` file mapping the requirements to reach every location, item and palace boss from the North Palace.
+
 ## Version 5.2.4 - September 26, 2026
 
 - Fixed an issue where elevators in mirrored rooms were sometimes incorrect.

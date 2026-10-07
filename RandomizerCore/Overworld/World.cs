@@ -1691,6 +1691,28 @@ public abstract class World
         return true;
     }
   
+    /// <summary>
+    /// Whether a terrain tile can be walked on in this world, and the requirement (if any) needed to do so.
+    /// This mirrors the terrain checks in <see cref="UpdateReachable(ref bool[,], int, int, IReadOnlySet{RequirementType})"/>.
+    /// </summary>
+    public virtual bool TryGetWalkRequirement(Terrain terrain, out RequirementType? requirement)
+    {
+        requirement = null;
+        if (terrain is Terrain.LAVA or Terrain.BRIDGE or Terrain.CAVE or Terrain.ROAD or Terrain.PALACE or Terrain.TOWN
+            || (walkableTerrains?.Contains(terrain) ?? false))
+        {
+            return true;
+        }
+        requirement = terrain switch
+        {
+            Terrain.WALKABLEWATER or Terrain.PREPLACED_WATER_WALKABLE => RequirementType.BOOTS,
+            Terrain.ROCK => RequirementType.HAMMER,
+            Terrain.RIVER_DEVIL => RequirementType.FLUTE,
+            _ => null
+        };
+        return requirement != null;
+    }
+
     protected void UpdateReachable(IReadOnlySet<RequirementType> requireables)
     {
 

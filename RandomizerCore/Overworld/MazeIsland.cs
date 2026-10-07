@@ -541,6 +541,21 @@ sealed class MazeIsland : World
         }
     }
 
+    public override bool TryGetWalkRequirement(Terrain terrain, out RequirementType? requirement)
+    {
+        requirement = null;
+        if (terrain is Terrain.ROAD or Terrain.PALACE or Terrain.BRIDGE or Terrain.CAVE)
+        {
+            return true;
+        }
+        if (terrain == Terrain.WALKABLEWATER)
+        {
+            requirement = RequirementType.BOOTS;
+            return true;
+        }
+        return false;
+    }
+
     public override void UpdateVisit(IReadOnlySet<RequirementType> requireables)
     {
         bool changed = true;

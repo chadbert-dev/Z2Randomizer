@@ -148,6 +148,11 @@ Seed: {config.Seed}
                             var spoilerMapFilename = basename + "_spoiler.png";
                             await files.SaveGeneratedBinaryFile(spoilerMapFilename, new Spoiler(randomizer.ROMData).CreateSpoilerImage(randomizer.worlds), Main.OutputFilePath);
                         }
+                        if (config.GenerateRequirementGraph)
+                        {
+                            var graphFilename = basename + "_requirements.json";
+                            await files.SaveSpoilerFile(graphFilename, randomizer.GenerateRequirementGraph(), Main.OutputFilePath);
+                        }
                         ProgressHeading = "Generation Complete";
                         ProgressBody = $"Hash: {randomizer.Hash}\n\nFile: {filename}";
                     } else if (!output.success)

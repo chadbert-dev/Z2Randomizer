@@ -231,6 +231,38 @@ public class Requirements
         return individualRequirementsSatisfied || compositeRequirementSatisfied;
     }
 
+    /// <summary>
+    /// Expands these requirements into alternatives (OR) of requirement sets (AND), with the implicit requirements
+    /// (e.g. JUMP needing TWO_CONTAINERS) added to each set. A single empty set means there are no requirements.
+    /// </summary>
+    public List<HashSet<RequirementType>> ToClauses()
+    {
+        if (IndividualRequirements.Length + CompositeRequirements.Length == 0)
+        {
+            return [[]];
+        }
+        List<HashSet<RequirementType>> clauses = [];
+        foreach (var requirement in IndividualRequirements)
+        {
+            clauses.Add([requirement]);
+        }
+        foreach (var composite in CompositeRequirements)
+        {
+            clauses.Add([.. composite]);
+        }
+        foreach (var clause in clauses)
+        {
+            foreach (var requirement in clause.ToArray())
+            {
+                if (ImplicitRequirements.TryGetValue(requirement, out var implicitRequirements))
+                {
+                    clause.UnionWith(implicitRequirements);
+                }
+            }
+        }
+        return clauses;
+    }
+
     public Requirements WithHardRequirement(RequirementType requirement)
     {
         Requirements newRequirements = new();
