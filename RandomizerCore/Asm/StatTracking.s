@@ -200,6 +200,8 @@ ItemIDToTimestampId:
     .byte $ff ; ITEM_SPELL_SPELL
     .byte TsThunderSpell ; ITEM_THUNDER_SPELL
     .byte $ff ; ITEM_DASH_SPELL
+    .byte $ff ; ITEM_TANOOKI
+    .byte $ff ; ITEM_AP
 
 ;;;
 ; Writes the current timestamp to SRAM.

@@ -831,6 +831,13 @@ public sealed partial class RandomizerConfiguration() : INotifyPropertyChanged
     [IgnoreInFlags]
     private bool generateRequirementGraph = false;
 
+    /// <summary>
+    /// Replaces every major item with the AP item for the Archipelago multiworld.
+    /// </summary>
+    [Reactive]
+    [IgnoreInFlags]
+    private bool archipelagoMode = false;
+
     [Reactive]
     [DifficultyOnly]
     private bool revealWalkthroughWalls = false;
@@ -1466,6 +1473,15 @@ public sealed partial class RandomizerConfiguration() : INotifyPropertyChanged
         properties.SpellItemHints = enableSpellItemHints ?? GetIndeterminateFlagValue(r);
         properties.HelpfulHints = helpfulHints;
         properties.TownNameHints = enableTownNameHints ?? GetIndeterminateFlagValue(r);
+
+        properties.ArchipelagoMode = archipelagoMode;
+        if (archipelagoMode)
+        {
+            // Every major item is the AP item, so there's nothing for hints to point at
+            properties.SpellItemHints = false;
+            properties.HelpfulHints = HelpfulHintOption.NONE;
+            properties.TownNameHints = false;
+        }
 
         //Misc.
         properties.BeepThreshold = beepThreshold switch

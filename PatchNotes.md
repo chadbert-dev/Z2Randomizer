@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Added an "Archipelago Mode" option that replaces every major item with an AP item for the Archipelago multiworld.
 - Added a "Generate Requirements Graph" option (Hints tab) that writes a `_requirements.json` file listing the minimal routes and requirements to reach every item location and palace boss from the North Palace.
 
 ## Version 5.2.4 - September 26, 2026

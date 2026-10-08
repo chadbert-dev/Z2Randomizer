@@ -386,6 +386,11 @@ HandlePBagTimerClear:
     nop
 .reloc
 ExpandedGetItem:
+    ; The Archipelago placeholder gives nothing. The location's collected flag was already set by GetItem.
+    cpy #ITEM_AP
+    bne @NotArchipelagoItem
+        jmp GetItemReturn
+@NotArchipelagoItem:
 ;    cpy #ITEM_RED_MAGIC_JAR + 1
 ;    bcs @NotJar 
 ;        
@@ -554,6 +559,8 @@ ItemTileTable:
     .byte $f1, $f1 ; Spell Spell
     .byte $f7, $f9 ; Thunder Spell
     .byte $cf, $92 ; Dash Spell
+    .byte $00, $f5 ; Tanooki (never placed in a sideview)
+    .byte $a8, $f5 ; Archipelago item (reuses the Link Doll tile so no CHR bank needs to change)
 
 ; In vanilla this table is limited only to the 6 items in $10-$16
 ; We can keep the first $10 items using the original, and just expand the rest
@@ -582,3 +589,5 @@ ItemPaletteTable:
     .byte $01 ; Spell Spell
     .byte $01 ; Thunder Spell
     .byte $01 ; Dash Spell
+    .byte $01 ; Tanooki
+    .byte $03 ; Archipelago item

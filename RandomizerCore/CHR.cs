@@ -199,6 +199,7 @@ public static class CHR
         { Collectable.JUMP_SPELL, JumpTiles },
         //Too lazy to make this real for now. It can just be jump.
         { Collectable.TANOOKI, JumpTiles },
+        { Collectable.AP_ITEM, OneUpTiles },
         { Collectable.LIFE_SPELL, LifeTiles },
         { Collectable.FAIRY_SPELL, FairyTiles },
         { Collectable.FIRE_SPELL, FireTiles },

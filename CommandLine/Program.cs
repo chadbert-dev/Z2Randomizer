@@ -35,6 +35,9 @@ public class Program
     [Option(ShortName = "po", Description = "[Optional] Specifies a player options file to use for misc settings")]
     public string? PlayerOptions { get; }
 
+    [Option(LongName = "archipelago", Description = "[Optional] Replace every major item with the AP item for the Archipelago multiworld")]
+    public bool Archipelago { get; }
+
     private RandomizerConfiguration? configuration;
     private byte[]? vanillaRomData;
     private static readonly Logger logger = LogManager.GetCurrentClassLogger();
@@ -72,6 +75,10 @@ public class Program
             Seed = r.Next(1000000000);
         } 
         configuration!.Seed = Seed.Value.ToString();
+        if (Archipelago)
+        {
+            configuration.ArchipelagoMode = true;
+        }
 
         if (string.IsNullOrEmpty(Rom))
         {

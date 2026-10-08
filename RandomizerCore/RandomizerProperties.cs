@@ -139,6 +139,8 @@ public class RandomizerProperties
     public bool UsePalaceItemRoomCountIndicator { get; set; }
     public bool RevealWalkthroughWalls { get; set; }
     public bool RevealHiddenJars { get; set; }
+    [NotMapped]
+    public bool ArchipelagoMode { get; set; }
 
     //Enemies
     public EnemyLifeOption ShuffleEnemyHP { get; set; }

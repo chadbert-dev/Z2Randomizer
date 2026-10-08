@@ -321,6 +321,13 @@ the locations passed through and the items and spells each route requires.
 
 It describes the logic only and does not reveal which items are placed where. It does not change the seed.</value>
 	</data>
+	<data name="ArchipelagoModeToolTip" xml:space="preserve">
+<value>Replaces every major item (items, spells, sword techs, heart and magic containers and quest items)
+with an AP item for use with the Archipelago multiworld. Picking one up gives nothing and only marks the
+location as collected. P-bags, magic jars, small keys and extra lives are not replaced.
+
+Hints are disabled in this mode.</value>
+	</data>
 	<data name="RevealWalkthroughWallsToolTip" xml:space="preserve">
 <value>Replaces all false wall and floor tiles with background tiles.</value>
 	</data>

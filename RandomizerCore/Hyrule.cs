@@ -313,6 +313,13 @@ public class Hyrule
             await ProcessOverworld(progress, ct);
 
             if (ct.IsCancellationRequested) { return new RandomizerResult(false); }
+
+            if (props.ArchipelagoMode)
+            {
+                // The seed has been generated and validated with the real items; now hand them over to the multiworld
+                ArchipelagoItems.Apply(ItemLocations());
+            }
+
             UpdateProgress(progress, ProgressEnum.SHUFFLING_ENEMIES);
 
             if (props.ShuffleOverworldEnemies)

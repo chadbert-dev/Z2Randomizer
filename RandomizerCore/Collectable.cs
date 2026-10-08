@@ -42,7 +42,11 @@ public enum Collectable
     SPELL_SPELL = 0x22,
     THUNDER_SPELL = 0x23,
     DASH_SPELL = 0x24,
-    TANOOKI = 0x25
+    TANOOKI = 0x25,
+    /// <summary>
+    /// Placeholder for any major item in Archipelago mode. Picking it up only sets the location's collected flag.
+    /// </summary>
+    AP_ITEM = 0x26
 }
 
 
@@ -107,6 +111,7 @@ public static class CollectableExtensions
             Collectable.THUNDER_SPELL => true,
             Collectable.DO_NOT_USE_ANTIFAIRY => false,
             Collectable.TANOOKI => true,
+            Collectable.AP_ITEM => false,
             _ => throw new Exception("Invalid item type determining itemgets")
         };
     }
@@ -151,6 +156,7 @@ public static class CollectableExtensions
             Collectable.SPELL_SPELL => "SPELL$SPELL",
             Collectable.THUNDER_SPELL => "THUNDER$SPELL",
             Collectable.TANOOKI => "TANOOKI$SUIT",
+            Collectable.AP_ITEM => "AP$ITEM",
             _ => "MISSING"
         };
     }
@@ -195,6 +201,7 @@ public static class CollectableExtensions
             Collectable.SPELL_SPELL => "SPELL",
             Collectable.THUNDER_SPELL => "THUNDER",
             Collectable.TANOOKI => "TANOOKI",
+            Collectable.AP_ITEM => "AP ITEM",
             _ => "MISSING"
         };
     }
