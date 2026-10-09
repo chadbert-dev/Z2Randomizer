@@ -557,13 +557,15 @@ public class Hyrule
         ];
     }
 
-    private static byte[] CalculateHash(string flags, int seedHash, byte[] romHash, byte[] rngState)
+    private byte[] CalculateHash(string flags, int seedHash, byte[] romHash, byte[] rngState)
     {
         return MD5Hash.ComputeHash(Encoding.UTF8.GetBytes(
             flags +
             seedHash +
             romHash +
-            Util.ByteArrayToHexString(rngState)
+            Util.ByteArrayToHexString(rngState) +
+            // only Archipelago ROMs have a slot name, so every other hash is unchanged
+            (props.ArchipelagoMode ? props.ArchipelagoSlotName : "")
         ));
     }
 
@@ -3901,6 +3903,10 @@ FlagHudUpdate:
         CustomHud(engine, props.UpdatedHud);
         rom.ChangeLavaKillPosition(engine);
         rom.FixItemPickup(engine);
+        if (props.ArchipelagoMode)
+        {
+            ArchipelagoSignature.Write(engine, props.ArchipelagoSlotName, props.Seed ?? "", SeedHash);
+        }
         rom.FixMinibossGlitchyAppearance(engine);
         rom.FixBossKillPaletteGlitch(engine);
         rom.ThunderbirdEnterLeftFix(engine);

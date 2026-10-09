@@ -38,6 +38,9 @@ public class Program
     [Option(LongName = "archipelago", Description = "[Optional] Replace every major item with the AP item for the Archipelago multiworld")]
     public bool Archipelago { get; }
 
+    [Option(ShortName = "sl", LongName = "slot-name", Description = "[Optional] The Archipelago slot name to store in the ROM. Required with --archipelago, at most 16 characters")]
+    public string? SlotName { get; }
+
     private RandomizerConfiguration? configuration;
     private byte[]? vanillaRomData;
     private static readonly Logger logger = LogManager.GetCurrentClassLogger();
@@ -78,6 +81,7 @@ public class Program
         if (Archipelago)
         {
             configuration.ArchipelagoMode = true;
+            configuration.ArchipelagoSlotName = SlotName ?? configuration.ArchipelagoSlotName;
         }
 
         if (string.IsNullOrEmpty(Rom))

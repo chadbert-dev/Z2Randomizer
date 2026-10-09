@@ -34,6 +34,7 @@ public record ApLocation(
 public record ApManifest(
     string? Seed,
     string? Flags,
+    string SlotName,
     string Description,
     List<ApLocation> Locations,
     List<string> Warnings);
@@ -130,7 +131,7 @@ public static class ApManifestBuilder
                 + $"0x{group.Key.Address:x4} mask 0x{group.Key.Mask:x2}, so they are checked together.");
         }
 
-        return new ApManifest(props.Seed, props.Flags, DESCRIPTION, locations, warnings);
+        return new ApManifest(props.Seed, props.Flags, props.ArchipelagoSlotName, DESCRIPTION, locations, warnings);
     }
 
     // Where the item byte of each overworld location with a shuffled item is in the ROM. Entering a cave goes through a

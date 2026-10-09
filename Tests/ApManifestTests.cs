@@ -131,7 +131,7 @@ public class ApManifestTests
     [TestMethod]
     public void Serialization_RoundTrips()
     {
-        var manifest = new ApManifest("1", "f", "d", [new ApLocation("a", "A", ApFlagKind.Wizard, 0x77a, 8, 1)], ["w"]);
+        var manifest = new ApManifest("1", "f", "slot", "d", [new ApLocation("a", "A", ApFlagKind.Wizard, 0x77a, 8, 1)], ["w"]);
 
         string json = JsonSerializer.Serialize(manifest, ApManifestSerializationContext.Default.ApManifest);
         var parsed = JsonSerializer.Deserialize(json, ApManifestSerializationContext.Default.ApManifest)!;

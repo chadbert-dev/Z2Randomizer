@@ -126,12 +126,17 @@ public class RandomizerViewModel : ReactiveObject, IRoutableViewModel, IActivata
 
         var seedValidObservable = this.WhenAnyValue(x => x.Main.Config.Seed, seed => !string.IsNullOrWhiteSpace(seed));
 
+        // Archipelago ROMs store the slot name, so it has to be filled in
+        var slotNameValidObservable = this.WhenAnyValue(x => x.Main.Config.ArchipelagoMode, x => x.Main.Config.ArchipelagoSlotName,
+            (archipelago, slotName) => !archipelago || ArchipelagoSignature.ValidateSlotName(slotName?.Trim()) == null);
+
         CanGenerateObservable = this.WhenAnyValue(x => x.FlagsValid).CombineLatest(
             seedValidObservable,
+            slotNameValidObservable,
             Main.RomFileViewModel.HasRomDataObservable,
             Main.GenerateRomViewModel.WhenAnyValue(x => x.IsRunning),
-            (flagsValid, seedValid, hasRom, isRunning) =>
-                flagsValid && seedValid && hasRom && !isRunning);
+            (flagsValid, seedValid, slotNameValid, hasRom, isRunning) =>
+                flagsValid && seedValid && slotNameValid && hasRom && !isRunning);
 
         FlagInputUnderlineObservable = this.WhenAnyValue(x => x.ThemeVariantName)
             .CombineLatest(this.WhenAnyValue(x => x.FlagsValid), (theme, valid) =>

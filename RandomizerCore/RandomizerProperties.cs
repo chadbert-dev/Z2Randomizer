@@ -141,6 +141,8 @@ public class RandomizerProperties
     public bool RevealHiddenJars { get; set; }
     [NotMapped]
     public bool ArchipelagoMode { get; set; }
+    [NotMapped]
+    public string ArchipelagoSlotName { get; set; } = "";
 
     //Enemies
     public EnemyLifeOption ShuffleEnemyHP { get; set; }

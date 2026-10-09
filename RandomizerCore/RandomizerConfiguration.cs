@@ -838,6 +838,13 @@ public sealed partial class RandomizerConfiguration() : INotifyPropertyChanged
     [IgnoreInFlags]
     private bool archipelagoMode = false;
 
+    /// <summary>
+    /// The slot name from the player's Archipelago YAML, stored in the ROM. At most 16 characters.
+    /// </summary>
+    [Reactive]
+    [IgnoreInFlags]
+    private string archipelagoSlotName = "";
+
     [Reactive]
     [DifficultyOnly]
     private bool revealWalkthroughWalls = false;
@@ -1477,6 +1484,11 @@ public sealed partial class RandomizerConfiguration() : INotifyPropertyChanged
         properties.ArchipelagoMode = archipelagoMode;
         if (archipelagoMode)
         {
+            if (ArchipelagoSignature.ValidateSlotName(archipelagoSlotName?.Trim()) is { } slotNameError)
+            {
+                throw new UserFacingException("Invalid Slot Name", slotNameError);
+            }
+            properties.ArchipelagoSlotName = archipelagoSlotName!.Trim();
             // Every major item is the AP item, so there's nothing for hints to point at
             properties.SpellItemHints = false;
             properties.HelpfulHints = HelpfulHintOption.NONE;

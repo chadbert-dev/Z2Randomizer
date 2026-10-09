@@ -330,6 +330,10 @@ Hints are disabled in this mode.
 
 Also writes an ap_locations.json file listing the RAM flag of every AP item location.</value>
 	</data>
+	<data name="ArchipelagoSlotNameToolTip" xml:space="preserve">
+<value>Your slot name from the Archipelago YAML. It is stored in the ROM together with the seed so the
+Archipelago client can check it is connecting the right ROM. At most 16 characters.</value>
+	</data>
 	<data name="RevealWalkthroughWallsToolTip" xml:space="preserve">
 <value>Replaces all false wall and floor tiles with background tiles.</value>
 	</data>
