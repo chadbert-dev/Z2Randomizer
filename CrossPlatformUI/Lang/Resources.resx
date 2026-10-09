@@ -326,7 +326,9 @@ It describes the logic only and does not reveal which items are placed where. It
 with an AP item for use with the Archipelago multiworld. Picking one up gives nothing and only marks the
 location as collected. P-bags, magic jars, small keys and extra lives are not replaced.
 
-Hints are disabled in this mode.</value>
+Hints are disabled in this mode.
+
+Also writes an ap_locations.json file listing the RAM flag of every AP item location.</value>
 	</data>
 	<data name="RevealWalkthroughWallsToolTip" xml:space="preserve">
 <value>Replaces all false wall and floor tiles with background tiles.</value>

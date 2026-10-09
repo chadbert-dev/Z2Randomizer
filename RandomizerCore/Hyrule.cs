@@ -2857,6 +2857,17 @@ public class Hyrule
             RequirementGraphSerializationContext.Default.RequirementRoutes);
     }
 
+    /// <summary>
+    /// JSON listing the RAM flag of every AP item location, for an emulator to watch. Only meaningful in Archipelago mode,
+    /// and must be called after the ROM has been generated.
+    /// </summary>
+    public string GenerateArchipelagoManifest()
+    {
+        return System.Text.Json.JsonSerializer.Serialize(
+            ApManifestBuilder.Build(worlds, ItemLocations(), ROMData, props),
+            ApManifestSerializationContext.Default.ApManifest);
+    }
+
     public string GenerateSpoiler()
     {
         StringBuilder sb = new StringBuilder();

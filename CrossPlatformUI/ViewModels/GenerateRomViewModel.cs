@@ -153,6 +153,11 @@ Seed: {config.Seed}
                             var graphFilename = basename + "_requirements.json";
                             await files.SaveSpoilerFile(graphFilename, randomizer.GenerateRequirementRoutes(), Main.OutputFilePath);
                         }
+                        if (config.ArchipelagoMode)
+                        {
+                            var manifestFilename = basename + "_ap_locations.json";
+                            await files.SaveSpoilerFile(manifestFilename, randomizer.GenerateArchipelagoManifest(), Main.OutputFilePath);
+                        }
                         ProgressHeading = "Generation Complete";
                         ProgressBody = $"Hash: {randomizer.Hash}\n\nFile: {filename}";
                     } else if (!output.success)

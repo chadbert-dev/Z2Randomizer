@@ -95,6 +95,16 @@ public record RequirementRoutes(
 public partial class RequirementGraphSerializationContext : JsonSerializerContext { }
 
 /// <summary>
+/// Node ids shared by the requirement graph and the Archipelago location manifest, so the two can be joined.
+/// </summary>
+public static class GraphNodeIds
+{
+    public static string Location(Location location) => location.ID.ToString();
+    public static string PalaceRoom(Location location, int roomIndex) => $"{Location(location)}:room{roomIndex}";
+    public static string TownMap(Location location, TownMap map) => $"{Location(location)}:map{map.Map}";
+}
+
+/// <summary>
 /// Exports the logic of a generated seed as a graph, starting from the North Palace. Nodes are overworld
 /// locations, town maps and palace rooms; an edge can be traversed when the requirements on it are held.
 /// The graph describes the logic only and does not say which item is placed where.
@@ -179,6 +189,10 @@ public static class RequirementGraphBuilder
                 GetNodeId(west.northPalace), nodes, edges);
         }
 
+        // In Archipelago mode only the AP items are locations that get checked
+        private bool HoldsItem(Collectable? collectable) =>
+            collectable != null && (!props.ArchipelagoMode || collectable == Collectable.AP_ITEM);
+
         private static bool IsPlaced(Location location) => location.Y > 0 && location.Xpos >= 0;
 
         private string GetNodeId(Location location, bool isStart = false)
@@ -187,13 +201,14 @@ public static class RequirementGraphBuilder
             {
                 return existing;
             }
-            string id = UniqueId(location.ID.ToString());
+            string id = UniqueId(GraphNodeIds.Location(location));
             locationIds[location] = id;
             var kind = location.Town != null ? GraphNodeKind.Town
                 : location.Palace != null ? GraphNodeKind.Palace
                 : GraphNodeKind.Location;
             // towns and palaces keep their items in their maps/rooms
-            bool hasItem = kind == GraphNodeKind.Location && location.GetCollectableCount() > 0;
+            bool hasItem = kind == GraphNodeKind.Location && location.GetCollectableCount() > 0
+                && (!props.ArchipelagoMode || location.GetAllCollectables().Contains(Collectable.AP_ITEM));
             nodes.Add(new GraphNode(id, kind, string.IsNullOrEmpty(location.Name) ? id : location.Name,
                 location.Continent.ToString(), location.Xpos, location.Y, isStart, hasItem, false));
             return id;
@@ -361,16 +376,18 @@ public static class RequirementGraphBuilder
                 return;
             }
             string locationId = GetNodeId(location);
+            // both Saria locations lead into the same town, whose items belong to the north one
+            bool carriesItems = location.ID != LocationID.WEST_TOWN_SARIA_SOUTH;
             Dictionary<TownMap, string> ids = [];
             string MapId(TownMap map)
             {
                 if (!ids.TryGetValue(map, out var id))
                 {
-                    id = UniqueId($"{locationId}:map{map.Map}");
+                    id = UniqueId(GraphNodeIds.TownMap(location, map));
                     ids[map] = id;
                     nodes.Add(new GraphNode(id, GraphNodeKind.TownMap,
                         string.IsNullOrEmpty(map.Name) ? $"{town.Name} map {map.Map}" : $"{town.Name} - {map.Name}",
-                        location.Continent.ToString(), null, null, false, map.Collectable != null, false));
+                        location.Continent.ToString(), null, null, false, HoldsItem(map.Collectable) && carriesItems, false));
                 }
                 return id;
             }
@@ -414,12 +431,12 @@ public static class RequirementGraphBuilder
             for (int i = 0; i < palace.AllRooms.Count; i++)
             {
                 var room = palace.AllRooms[i];
-                string id = UniqueId($"{locationId}:room{i}");
+                string id = UniqueId(GraphNodeIds.PalaceRoom(location, i));
                 ids[room] = id;
                 nodes.Add(new GraphNode(id, GraphNodeKind.PalaceRoom,
                     string.IsNullOrEmpty(room.Name) ? $"Palace {palace.Number} room {i}" : room.Name,
                     location.Continent.ToString(), room.coords.X, room.coords.Y, false,
-                    palace.ItemRooms.Contains(room), room == palace.BossRoom));
+                    palace.ItemRooms.Contains(room) && HoldsItem(room.Collectable), room == palace.BossRoom));
             }
 
             AddEdge(locationId, ids[entrance], GraphEdgeKind.Palace, [[]]);
