@@ -155,8 +155,8 @@ Seed: {config.Seed}
                         }
                         if (config.ArchipelagoMode)
                         {
-                            var manifestFilename = basename + "_ap_locations.json";
-                            await files.SaveSpoilerFile(manifestFilename, randomizer.GenerateArchipelagoManifest(), Main.OutputFilePath);
+                            var yamlFilename = basename + "_ap.yaml";
+                            await files.SaveSpoilerFile(yamlFilename, randomizer.GenerateArchipelagoYaml(), Main.OutputFilePath);
                         }
                         ProgressHeading = "Generation Complete";
                         ProgressBody = $"Hash: {randomizer.Hash}\n\nFile: {filename}";

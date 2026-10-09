@@ -328,7 +328,7 @@ location as collected. P-bags, magic jars, small keys and extra lives are not re
 
 Hints are disabled in this mode.
 
-Also writes an ap_locations.json file listing the RAM flag of every AP item location.</value>
+Also writes an ap.yaml file for the Archipelago world with the slot name, seed, logic options, the RAM flag of every AP item location and what is needed to reach each of them.</value>
 	</data>
 	<data name="ArchipelagoSlotNameToolTip" xml:space="preserve">
 <value>Your slot name from the Archipelago YAML. It is stored in the ROM together with the seed so the

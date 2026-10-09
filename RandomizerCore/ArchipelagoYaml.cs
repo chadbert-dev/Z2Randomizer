@@ -1,0 +1,141 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Text.RegularExpressions;
+
+namespace Z2Randomizer.RandomizerCore;
+
+/// <summary>
+/// Builds the player YAML for the Archipelago world: the slot name, the seed the ROM was made from, the options that
+/// affect the logic, where the game keeps the flag of every AP item location and what is needed to reach each of them.
+/// </summary>
+public static partial class ApYamlBuilder
+{
+    /// <summary>Bumped when the layout of the file changes, so the world can reject files it can't read.</summary>
+    public const int FormatVersion = 1;
+    public const string GameName = "Z2R";
+    public const string ArchipelagoVersion = "0.6.9";
+
+    // Item names used in starting_items
+    private static readonly Collectable[] STARTING_ITEM_ORDER =
+    [
+        Collectable.CANDLE, Collectable.GLOVE, Collectable.RAFT, Collectable.BOOTS, Collectable.FLUTE, Collectable.CROSS,
+        Collectable.HAMMER, Collectable.MAGIC_KEY,
+        Collectable.TROPHY, Collectable.MEDICINE, Collectable.CHILD, Collectable.MIRROR, Collectable.WATER,
+        Collectable.SHIELD_SPELL, Collectable.JUMP_SPELL, Collectable.TANOOKI, Collectable.LIFE_SPELL, Collectable.FAIRY_SPELL,
+        Collectable.FIRE_SPELL, Collectable.DASH_SPELL, Collectable.REFLECT_SPELL, Collectable.SPELL_SPELL, Collectable.THUNDER_SPELL,
+        Collectable.UPSTAB, Collectable.DOWNSTAB,
+    ];
+
+    /// <summary>The name of an item in the YAML, such as "Life Spell" or "Downstab".</summary>
+    public static string ItemName(Collectable collectable)
+    {
+        return string.Join(' ', collectable.ToString().Split('_')
+            .Select(word => char.ToUpperInvariant(word[0]) + word[1..].ToLowerInvariant()));
+    }
+
+    /// <summary>The items the player starts with, each once. Spells follow the dash and Mario mode options.</summary>
+    public static List<Collectable> StartingItems(RandomizerProperties props)
+    {
+        return STARTING_ITEM_ORDER
+            .Where(c => !(c == Collectable.FIRE_SPELL && props.ReplaceFireWithDash)
+                && !(c == Collectable.DASH_SPELL && !props.ReplaceFireWithDash)
+                && !(c == Collectable.TANOOKI && !props.MarioMode)
+                && !(c == Collectable.JUMP_SPELL && props.MarioMode))
+            .Where(c => props.StartsWithCollectable(c))
+            .ToList();
+    }
+
+    /// <summary>The version of the randomizer, such as "5.2.4".</summary>
+    public static string CurrentVersion()
+    {
+        var version = typeof(ApYamlBuilder).Assembly.GetName().Version!;
+        return $"{version.Major}.{version.Minor}.{version.Build}";
+    }
+
+    /// <param name="hash">The hash shown on the file select screen of the ROM.</param>
+    /// <param name="randomizerVersion">The version of the randomizer that made the ROM.</param>
+    public static string Build(RandomizerProperties props, ApManifest manifest, RequirementRoutes routes, string hash, string randomizerVersion)
+    {
+        var rules = routes.Targets.ToDictionary(t => t.Target);
+        var missing = manifest.Locations.Where(l => !rules.ContainsKey(l.NodeId)).Select(l => l.NodeId).ToList();
+        if (missing.Count > 0)
+        {
+            throw new ImpossibleException($"No rule for AP locations: {string.Join(", ", missing)}");
+        }
+
+        var sb = new StringBuilder();
+        sb.Append("name: ").Append(Scalar(manifest.SlotName)).Append('\n');
+        sb.Append("game: ").Append(GameName).Append('\n');
+        sb.Append("requires:\n");
+        sb.Append("  version: ").Append(ArchipelagoVersion).Append('\n');
+        sb.Append(GameName).Append(":\n");
+        sb.Append("  rom_seed: ").Append(Quoted(props.Seed ?? "")).Append('\n');
+        sb.Append("  format_version: ").Append(FormatVersion).Append('\n');
+        // enough to make the same ROM again if the original file is lost
+        sb.Append("  randomizer_version: ").Append(Quoted(randomizerVersion)).Append('\n');
+        sb.Append("  flags: ").Append(Quoted(props.Flags ?? "")).Append('\n');
+        sb.Append("  hash: ").Append(Quoted(hash.Replace(" ", ""))).Append('\n');
+        sb.Append("  replace_fire_with_dash: ").Append(props.ReplaceFireWithDash ? "true" : "false").Append('\n');
+        sb.Append("  start_magic_containers: ").Append(props.StartMagicContainers).Append('\n');
+        sb.Append("  start_heart_containers: ").Append(props.StartHearts).Append('\n');
+        sb.Append("  crystals_required: ").Append(props.StartGems).Append('\n');
+        sb.Append("  starting_items: {")
+            .Append(string.Join(", ", StartingItems(props).Select(c => $"{Scalar(ItemName(c))}: 1"))).Append("}\n");
+
+        sb.Append("  locations:\n");
+        foreach (var location in manifest.Locations.OrderBy(l => l.NodeId, StringComparer.Ordinal))
+        {
+            sb.Append("    ").Append(Key(location.NodeId))
+                .Append($": {{address: {location.Address}, mask: {location.Mask}, collected: {location.CollectedBitValue}}}\n");
+        }
+
+        sb.Append("  rules:\n");
+        foreach (var target in routes.Targets.OrderBy(t => t.Target, StringComparer.Ordinal))
+        {
+            // alternatives (OR) of requirements that are all needed (AND). [[]] is free, [] can't be reached.
+            var alternatives = target.Routes.Select(r => "[" + string.Join(", ", r.Requirements) + "]");
+            sb.Append("    ").Append(Key(target.Target)).Append(": [").Append(string.Join(", ", alternatives)).Append("]\n");
+        }
+        return sb.ToString();
+    }
+
+    // Words YAML would read as something other than text
+    private static readonly HashSet<string> Reserved = new(StringComparer.OrdinalIgnoreCase)
+        { "true", "false", "yes", "no", "on", "off", "y", "n", "null", "~" };
+
+    [GeneratedRegex(@"^[A-Za-z_][A-Za-z0-9_]*( [A-Za-z0-9_]+)*$")]
+    private static partial Regex PlainText();
+
+    [GeneratedRegex(@"^[A-Za-z_][A-Za-z0-9_:]*$")]
+    private static partial Regex PlainKey();
+
+    /// <summary>A double quoted YAML string.</summary>
+    public static string Quoted(string text)
+    {
+        var sb = new StringBuilder("\"");
+        foreach (char c in text)
+        {
+            sb.Append(c switch
+            {
+                '"' => "\\\"",
+                '\\' => "\\\\",
+                '\n' => "\\n",
+                '\r' => "\\r",
+                '\t' => "\\t",
+                < ' ' => $"\\x{(int)c:x2}",
+                _ => c.ToString()
+            });
+        }
+        return sb.Append('"').ToString();
+    }
+
+    /// <summary>Text as a plain YAML scalar when that reads back as the same text, else quoted.</summary>
+    public static string Scalar(string text)
+    {
+        return PlainText().IsMatch(text) && !Reserved.Contains(text) ? text : Quoted(text);
+    }
+
+    private static string Key(string id) => PlainKey().IsMatch(id) ? id : Quoted(id);
+}

@@ -2860,14 +2860,15 @@ public class Hyrule
     }
 
     /// <summary>
-    /// JSON listing the RAM flag of every AP item location, for an emulator to watch. Only meaningful in Archipelago mode,
-    /// and must be called after the ROM has been generated.
+    /// The player YAML for the Archipelago world: the slot name, seed and logic options, the RAM flag of every AP item
+    /// location and what is needed to reach each of them. Only meaningful in Archipelago mode, and must be called
+    /// after the ROM has been generated.
     /// </summary>
-    public string GenerateArchipelagoManifest()
+    public string GenerateArchipelagoYaml()
     {
-        return System.Text.Json.JsonSerializer.Serialize(
-            ApManifestBuilder.Build(worlds, ItemLocations(), ROMData, props),
-            ApManifestSerializationContext.Default.ApManifest);
+        var manifest = ApManifestBuilder.Build(worlds, ItemLocations(), ROMData, props);
+        var routes = RequirementGraphBuilder.BuildRoutes(RequirementGraphBuilder.Build(worlds, props));
+        return ApYamlBuilder.Build(props, manifest, routes, Hash, ApYamlBuilder.CurrentVersion());
     }
 
     public string GenerateSpoiler()

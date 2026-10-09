@@ -166,12 +166,9 @@ public class Program
             logger.Info($"File {newFileName} has been created!");
             if (configuration.ArchipelagoMode)
             {
-                var manifestFile = $"{outpath}/Z2_{Seed}_{Flags}_ap_locations.json";
-                await File.WriteAllTextAsync(manifestFile, randomizer.GenerateArchipelagoManifest());
-                logger.Info($"File {manifestFile} has been created!");
-                var requirementsFile = $"{outpath}/Z2_{Seed}_{Flags}_requirements.json";
-                await File.WriteAllTextAsync(requirementsFile, randomizer.GenerateRequirementRoutes());
-                logger.Info($"File {requirementsFile} has been created!");
+                var yamlFile = $"{outpath}/Z2_{Seed}_{Flags}_ap.yaml";
+                await File.WriteAllTextAsync(yamlFile, randomizer.GenerateArchipelagoYaml());
+                logger.Info($"File {yamlFile} has been created!");
             }
             if (rom.debuginfo != null)
             {
