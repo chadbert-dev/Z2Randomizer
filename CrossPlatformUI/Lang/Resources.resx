@@ -322,9 +322,9 @@ the locations passed through and the items and spells each route requires.
 It describes the logic only and does not reveal which items are placed where. It does not change the seed.</value>
 	</data>
 	<data name="ArchipelagoModeToolTip" xml:space="preserve">
-<value>Replaces every major item (items, spells, sword techs, heart and magic containers and quest items)
-with an AP item for use with the Archipelago multiworld. Picking one up gives nothing and only marks the
-location as collected. P-bags, magic jars, small keys and extra lives are not replaced.
+<value>Puts an AP item in every item location for use with the Archipelago multiworld, in place of items, spells,
+sword techs, heart and magic containers, quest items and also P-bags, magic jars, small keys and extra lives.
+Picking one up gives nothing and only marks the location as collected. Archipelago hands out the small items as filler.
 
 Hints are disabled in this mode.
 

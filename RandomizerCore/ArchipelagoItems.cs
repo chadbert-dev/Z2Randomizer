@@ -5,21 +5,19 @@ using Z2Randomizer.RandomizerCore.Overworld;
 namespace Z2Randomizer.RandomizerCore;
 
 /// <summary>
-/// Archipelago mode: the multiworld decides what every major pickup gives, so in the ROM they all become
+/// Archipelago mode: the multiworld decides what every item location gives, so in the ROM they all become
 /// <see cref="Collectable.AP_ITEM"/>, which gives nothing and only sets the location's collected flag.
+/// That includes the P-bags, jars, small keys and extra lives the shuffle placed. Archipelago hands those out as filler.
 /// </summary>
 public static class ArchipelagoItems
 {
-    /// <summary>
-    /// Items, spells, sword techs, heart and magic containers and quest items. Not P-bags, jars, small keys or 1-ups.
-    /// </summary>
-    public static bool IsMajorItem(this Collectable collectable)
+    private static bool NeedsReplacing(Collectable collectable)
     {
-        return collectable != Collectable.AP_ITEM && !collectable.IsMinorItem() && !collectable.IsInternalUse();
+        return collectable != Collectable.AP_ITEM && !collectable.IsInternalUse();
     }
 
     /// <summary>
-    /// Replaces every major item at the given locations with the AP item, whether or not it was shuffled.
+    /// Replaces whatever is at the given locations with the AP item, whether or not it was shuffled.
     /// Returns the number of items replaced.
     /// </summary>
     public static int Apply(IEnumerable<Location> locations)
@@ -31,7 +29,7 @@ public static class ArchipelagoItems
             {
                 foreach (var townMap in location.Town.TownMaps)
                 {
-                    if (townMap.Collectable is { } collectable && collectable.IsMajorItem())
+                    if (townMap.Collectable is { } collectable && NeedsReplacing(collectable))
                     {
                         townMap.Collectable = Collectable.AP_ITEM;
                         replaced++;
@@ -42,7 +40,7 @@ public static class ArchipelagoItems
             {
                 foreach (var room in location.Palace.ItemRooms)
                 {
-                    if (room.Collectable is { } collectable && collectable.IsMajorItem())
+                    if (room.Collectable is { } collectable && NeedsReplacing(collectable))
                     {
                         room.Collectable = Collectable.AP_ITEM;
                         replaced++;
@@ -52,10 +50,11 @@ public static class ArchipelagoItems
             else
             {
                 var collectables = location.GetAllCollectables();
-                if (collectables.Any(c => c.IsMajorItem()))
+                int count = collectables.Count(NeedsReplacing);
+                if (count > 0)
                 {
-                    replaced += collectables.Count(c => c.IsMajorItem());
-                    location.SetCollectables(collectables.Select(c => c.IsMajorItem() ? Collectable.AP_ITEM : c));
+                    replaced += count;
+                    location.SetCollectables(collectables.Select(c => NeedsReplacing(c) ? Collectable.AP_ITEM : c));
                 }
             }
         }

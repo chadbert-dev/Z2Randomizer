@@ -14,56 +14,49 @@ public class ArchipelagoItemsTests
         Collectable.AP_ITEM.IsMinorItem().Should().BeFalse();
         Collectable.AP_ITEM.IsItemGetItem().Should().BeFalse();
         Collectable.AP_ITEM.AsRequirement().Should().BeNull();
-        Collectable.AP_ITEM.IsMajorItem().Should().BeFalse();
         Collectable.AP_ITEM.GetROMCollectableIndex().Should().Be(0x26);
         Collectable.AP_ITEM.EnglishText().Should().NotBe("MISSING");
         Collectable.AP_ITEM.SingleLineText().Should().NotBe("MISSING");
     }
 
     [TestMethod]
-    public void IsMajorItem_ExcludesBagsJarsKeysAndOneUps()
-    {
-        Collectable[] minor = [Collectable.SMALL_BAG, Collectable.MEDIUM_BAG, Collectable.LARGE_BAG, Collectable.XL_BAG,
-            Collectable.RED_JAR, Collectable.BLUE_JAR, Collectable.KEY, Collectable.ONEUP];
-        Collectable[] major = [Collectable.CANDLE, Collectable.HAMMER, Collectable.MAGIC_KEY, Collectable.HEART_CONTAINER,
-            Collectable.MAGIC_CONTAINER, Collectable.TROPHY, Collectable.CHILD, Collectable.MIRROR, Collectable.BAGUS_NOTE,
-            Collectable.UPSTAB, Collectable.DOWNSTAB, Collectable.SHIELD_SPELL, Collectable.DASH_SPELL, Collectable.TANOOKI];
-
-        minor.Should().OnlyContain(c => !c.IsMajorItem());
-        major.Should().OnlyContain(c => c.IsMajorItem());
-        Collectable.DO_NOT_USE.IsMajorItem().Should().BeFalse();
-        Collectable.DO_NOT_USE_ANTIFAIRY.IsMajorItem().Should().BeFalse();
-    }
-
-    [TestMethod]
-    public void Apply_ReplacesMajorItemsInOverworldLocationsOnly()
+    public void Apply_ReplacesEveryItemInOverworldLocations_IncludingSmallItems()
     {
         var hammer = new Location(LocationID.DM_HAMMER_CAVE, 40, 10, 1, Continent.DM);
         hammer.SetCollectables([Collectable.HAMMER]);
         var bag = new Location(LocationID.WEST_CAVE_PBAG, 41, 11, 1, Continent.WEST);
         bag.SetCollectables([Collectable.LARGE_BAG]);
+        var key = new Location(LocationID.WEST_CAVE_TROPHY, 42, 12, 1, Continent.WEST);
+        key.SetCollectables([Collectable.KEY]);
 
-        int replaced = ArchipelagoItems.Apply([hammer, bag]);
+        int replaced = ArchipelagoItems.Apply([hammer, bag, key]);
 
-        replaced.Should().Be(1);
+        replaced.Should().Be(3);
         hammer.GetAllCollectables().Should().Equal(Collectable.AP_ITEM);
-        bag.GetAllCollectables().Should().Equal(Collectable.LARGE_BAG);
+        bag.GetAllCollectables().Should().Equal(Collectable.AP_ITEM);
+        key.GetAllCollectables().Should().Equal(Collectable.AP_ITEM);
     }
 
     [TestMethod]
-    public void Apply_ReplacesMajorItemsInPalaceItemRooms()
+    [DataRow(Collectable.SMALL_BAG)]
+    [DataRow(Collectable.XL_BAG)]
+    [DataRow(Collectable.RED_JAR)]
+    [DataRow(Collectable.BLUE_JAR)]
+    [DataRow(Collectable.KEY)]
+    [DataRow(Collectable.ONEUP)]
+    [DataRow(Collectable.CANDLE)]
+    [DataRow(Collectable.HEART_CONTAINER)]
+    [DataRow(Collectable.THUNDER_SPELL)]
+    public void Apply_ReplacesEveryKindOfItemInPalaceItemRooms(Collectable placed)
     {
-        var itemRoom1 = new Room { HasItem = true, Collectable = Collectable.CANDLE };
-        var itemRoom2 = new Room { HasItem = true, Collectable = Collectable.KEY };
+        var itemRoom = new Room { HasItem = true, Collectable = placed };
         var palace = new Palace(1, true);
-        palace.ItemRooms.AddRange([itemRoom1, itemRoom2]);
+        palace.ItemRooms.Add(itemRoom);
         var location = new Location(LocationID.WEST_PALACE1, 30, 5, 1, Continent.WEST) { Palace = palace };
 
-        int replaced = ArchipelagoItems.Apply([location]);
+        ArchipelagoItems.Apply([location]).Should().Be(1);
 
-        replaced.Should().Be(1);
-        itemRoom1.Collectable.Should().Be(Collectable.AP_ITEM);
-        itemRoom2.Collectable.Should().Be(Collectable.KEY);
+        itemRoom.Collectable.Should().Be(Collectable.AP_ITEM);
     }
 
     [TestMethod]
