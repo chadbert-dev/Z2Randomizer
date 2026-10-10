@@ -13,6 +13,10 @@ public class ApYamlTests
         StartMagicContainers = 4,
         StartHearts = 4,
         StartGems = 6,
+        NewKasutoBasementRequirement = 7,
+        IncludeSpellsInShuffle = true,
+        IncludeSwordTechsInShuffle = false,
+        IncludeQuestItemsInShuffle = true,
         StartCandle = true,
         StartLife = true,
         StartFairy = true,
@@ -36,8 +40,9 @@ public class ApYamlTests
     ]);
 
     // the hash has spaces between the icons when read from the ROM
-    private static string Build(RandomizerProperties props, ApManifest manifest, RequirementRoutes routes) =>
-        ApYamlBuilder.Build(props, manifest, routes, "A B C D E F", "5.2.4");
+    private static string Build(RandomizerProperties props, ApManifest manifest, RequirementRoutes routes,
+        IReadOnlyList<(string NodeId, Collectable Item)>? fixedItems = null) =>
+        ApYamlBuilder.Build(props, manifest, routes, "A B C D E F", "5.2.4", fixedItems ?? []);
 
     [TestMethod]
     public void CurrentVersion_HasThreeNumbers()
@@ -65,10 +70,15 @@ public class ApYamlTests
               start_magic_containers: 4
               start_heart_containers: 4
               crystals_required: 6
+              new_kasuto_basement_requirement: 7
+              include_spells_in_shuffle: true
+              include_sword_techs_in_shuffle: false
+              include_quest_items_in_shuffle: true
               starting_items: {Candle: 1, Life Spell: 1, Fairy Spell: 1, Downstab: 1}
               locations:
                 WEST_CAVE_TROPHY: {address: 1552, mask: 8, collected: 0}
                 WEST_GRASS: {address: 1555, mask: 32, collected: 0}
+              fixed_items: {}
               rules:
                 EAST_GREAT_PALACE:room1: [[DOWNSTAB, GLOVE, HAMMER, KEY, RAFT, UPSTAB]]
                 WEST_CAVE_TROPHY: [[]]
@@ -142,5 +152,47 @@ public class ApYamlTests
     public void Scalar_QuotesAnythingYamlCouldMisread(string text, string expected)
     {
         ApYamlBuilder.Scalar(text).Should().Be(expected);
+    }
+
+    [TestMethod]
+    public void Build_ListsFixedItemsAndRequiresARuleForEach()
+    {
+        var routes = Routes();
+        routes.Targets.Add(new TargetAccess("WEST_TOWN_MIDO:map44", "Mido", GraphNodeKind.TownMap, false, false,
+            [new TargetRoute(["FAIRY", "FOUR_CONTAINERS"], [])]));
+        var fixedItems = new List<(string, Collectable)>
+        {
+            ("WEST_TOWN_RAURU:map36", Collectable.SHIELD_SPELL),
+            ("WEST_TOWN_MIDO:map44", Collectable.DOWNSTAB),
+        };
+
+        var withoutRule = () => Build(Props(), Manifest(), Routes(), fixedItems);
+        withoutRule.Should().Throw<ImpossibleException>().WithMessage("*WEST_TOWN_MIDO:map44*");
+
+        routes.Targets.Add(new TargetAccess("WEST_TOWN_RAURU:map36", "Rauru", GraphNodeKind.TownMap, false, false, [new TargetRoute([], [])]));
+        string yaml = Build(Props(), Manifest(), routes, fixedItems);
+
+        yaml.Should().Contain("""
+              fixed_items:
+                WEST_TOWN_MIDO:map44: Downstab
+                WEST_TOWN_RAURU:map36: Shield Spell
+              rules:
+            """.Replace("\r\n", "\n") + "\n");
+        yaml.Should().Contain("    WEST_TOWN_MIDO:map44: [[FAIRY, FOUR_CONTAINERS]]\n");
+    }
+
+    [TestMethod]
+    public void Build_ReportsEachShuffleOptionFromTheSeed()
+    {
+        var props = Props();
+        props.IncludeSpellsInShuffle = false;
+        props.IncludeSwordTechsInShuffle = true;
+        props.IncludeQuestItemsInShuffle = false;
+
+        string yaml = Build(props, Manifest(), Routes());
+
+        yaml.Should().Contain("  include_spells_in_shuffle: false\n")
+            .And.Contain("  include_sword_techs_in_shuffle: true\n")
+            .And.Contain("  include_quest_items_in_shuffle: false\n");
     }
 }

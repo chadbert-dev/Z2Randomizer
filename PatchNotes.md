@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-- Added an "Archipelago Mode" option that puts an AP item in every item location for the Archipelago multiworld, and writes a YAML file for the Archipelago world with the RAM flag and access rules of each AP item location. The slot name (at most 16 characters) and seed are stored in the ROM at CPU address $FCB0.
+- Added an "Archipelago Mode" option that puts an AP item in every item location for the Archipelago multiworld, and leaves spells, sword techniques and town quest items to the randomizer when they are not in the shuffle, and writes a YAML file for the Archipelago world with the RAM flag and access rules of each AP item location. The slot name (at most 16 characters) and seed are stored in the ROM at CPU address $FCB0.
 - Added a "Generate Requirements Graph" option (Hints tab) that writes a `_requirements.json` file listing the minimal routes and requirements to reach every item location and palace boss from the North Palace.
 
 ## Version 5.2.4 - September 26, 2026

@@ -56,10 +56,16 @@ public static partial class ApYamlBuilder
 
     /// <param name="hash">The hash shown on the file select screen of the ROM.</param>
     /// <param name="randomizerVersion">The version of the randomizer that made the ROM.</param>
-    public static string Build(RandomizerProperties props, ApManifest manifest, RequirementRoutes routes, string hash, string randomizerVersion)
+    /// <param name="fixedItems">
+    /// The items the randomizer placed itself in spots that are not Archipelago locations, because the player left
+    /// their kind of item out of the shuffle. Node id and item.
+    /// </param>
+    public static string Build(RandomizerProperties props, ApManifest manifest, RequirementRoutes routes, string hash, string randomizerVersion,
+        IReadOnlyList<(string NodeId, Collectable Item)> fixedItems)
     {
         var rules = routes.Targets.ToDictionary(t => t.Target);
-        var missing = manifest.Locations.Where(l => !rules.ContainsKey(l.NodeId)).Select(l => l.NodeId).ToList();
+        var missing = manifest.Locations.Select(l => l.NodeId).Concat(fixedItems.Select(f => f.NodeId))
+            .Where(id => !rules.ContainsKey(id)).ToList();
         if (missing.Count > 0)
         {
             throw new ImpossibleException($"No rule for AP locations: {string.Join(", ", missing)}");
@@ -81,6 +87,13 @@ public static partial class ApYamlBuilder
         sb.Append("  start_magic_containers: ").Append(props.StartMagicContainers).Append('\n');
         sb.Append("  start_heart_containers: ").Append(props.StartHearts).Append('\n');
         sb.Append("  crystals_required: ").Append(props.StartGems).Append('\n');
+        // magic containers needed before Granny's basement in New Kasuto opens
+        sb.Append("  new_kasuto_basement_requirement: ").Append(props.NewKasutoBasementRequirement).Append('\n');
+        // The kinds of items that are shuffled into Archipelago. For the ones that are not, the randomizer places the
+        // items itself (see fixed_items) and those spots are not locations.
+        sb.Append("  include_spells_in_shuffle: ").Append(props.IncludeSpellsInShuffle ? "true" : "false").Append('\n');
+        sb.Append("  include_sword_techs_in_shuffle: ").Append(props.IncludeSwordTechsInShuffle ? "true" : "false").Append('\n');
+        sb.Append("  include_quest_items_in_shuffle: ").Append(props.IncludeQuestItemsInShuffle ? "true" : "false").Append('\n');
         sb.Append("  starting_items: {")
             .Append(string.Join(", ", StartingItems(props).Select(c => $"{Scalar(ItemName(c))}: 1"))).Append("}\n");
 
@@ -89,6 +102,19 @@ public static partial class ApYamlBuilder
         {
             sb.Append("    ").Append(Key(location.NodeId))
                 .Append($": {{address: {location.Address}, mask: {location.Mask}, collected: {location.CollectedBitValue}}}\n");
+        }
+
+        if (fixedItems.Count == 0)
+        {
+            sb.Append("  fixed_items: {}\n");
+        }
+        else
+        {
+            sb.Append("  fixed_items:\n");
+            foreach (var (nodeId, item) in fixedItems.OrderBy(f => f.NodeId, StringComparer.Ordinal))
+            {
+                sb.Append("    ").Append(Key(nodeId)).Append(": ").Append(Scalar(ItemName(item))).Append('\n');
+            }
         }
 
         sb.Append("  rules:\n");

@@ -317,7 +317,7 @@ public class Hyrule
             if (props.ArchipelagoMode)
             {
                 // The seed has been generated and validated with the real items; now hand them over to the multiworld
-                ArchipelagoItems.Apply(ItemLocations());
+                ArchipelagoItems.Apply(ItemLocations(), props);
             }
 
             UpdateProgress(progress, ProgressEnum.SHUFFLING_ENEMIES);
@@ -2867,8 +2867,12 @@ public class Hyrule
     public string GenerateArchipelagoYaml()
     {
         var manifest = ApManifestBuilder.Build(worlds, ItemLocations(), ROMData, props);
-        var routes = RequirementGraphBuilder.BuildRoutes(RequirementGraphBuilder.Build(worlds, props));
-        return ApYamlBuilder.Build(props, manifest, routes, Hash, ApYamlBuilder.CurrentVersion());
+        var fixedItems = ArchipelagoItems.FixedItems(ItemLocations(), props)
+            .Select(f => (NodeId: GraphNodeIds.TownMap(f.Location, f.Map), f.Item)).ToList();
+        // the spots with fixed items need rules too, so the world knows when the player can get them
+        var routes = RequirementGraphBuilder.BuildRoutes(RequirementGraphBuilder.Build(worlds, props),
+            new HashSet<string>(fixedItems.Select(f => f.NodeId)));
+        return ApYamlBuilder.Build(props, manifest, routes, Hash, ApYamlBuilder.CurrentVersion(), fixedItems);
     }
 
     public string GenerateSpoiler()

@@ -469,7 +469,8 @@ public static class RequirementGraphBuilder
     /// For every item and boss node, the routes from the start that need the fewest requirements. Each route is the
     /// shortest path (in nodes) for its requirement set.
     /// </summary>
-    public static RequirementRoutes BuildRoutes(RequirementGraph graph)
+    /// <param name="extraTargets">Ids of other nodes to also find routes for.</param>
+    public static RequirementRoutes BuildRoutes(RequirementGraph graph, IReadOnlySet<string>? extraTargets = null)
     {
         var outgoing = graph.Edges.ToLookup(e => e.From);
         // keyed by reference: records compare by value, and identical parallel edges are legal
@@ -529,7 +530,7 @@ public static class RequirementGraphBuilder
         var nodesById = graph.Nodes.ToDictionary(n => n.Id);
         List<TargetAccess> targets = [];
         HashSet<string> usedNodes = [graph.StartNode];
-        foreach (var node in graph.Nodes.Where(n => n.HasItem || n.IsBoss))
+        foreach (var node in graph.Nodes.Where(n => n.HasItem || n.IsBoss || (extraTargets?.Contains(n.Id) ?? false)))
         {
             var routes = best.TryGetValue(node.Id, out var found) ? found : [];
             var targetRoutes = routes
