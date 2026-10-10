@@ -472,7 +472,7 @@ ExpandedGetItem:
 @Exit:
     jmp GetItemReturn
 @StabTable:
-    ;     Down, Up
+    ; indexed by item id - ITEM_UPSTAB: Upstab = $04, Downstab = $10 (see HaveStabs)
     .byte $04, $10
 
 ; Repoint the pointers that went to the original enemy/item tile table

@@ -491,7 +491,7 @@ Crystal5Placed := $0791
 Crystal6Placed := $0792
 Keys := $0793                             ; Current number of Keys
 Crystals := $0794                         ; Number of Crystals left
-HaveStabs := $0796                        ; 0x04 = Have Downstab | 0x10 = Have Upstab
+HaveStabs := $0796                        ; 0x04 = Have Upstab | 0x10 = Have Downstab
 HaveTrophy := $0798                       ; 0x10 = Have Trophy
 HaveMirror := $0799                       ; 1 = Have Mirror
 HaveBagusNoteAndMedicine := $079a         ; 0x08 = Bagu's Note | 0x40 = Medicine
