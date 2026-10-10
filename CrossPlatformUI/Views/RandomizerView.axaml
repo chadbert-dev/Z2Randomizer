@@ -78,7 +78,7 @@
         <TabControl Grid.Row="1" Margin="5" SelectedIndex="{Binding CurrentTabIndex}">
             <TabControl.ItemsPanel>
                 <ItemsPanelTemplate>
-                    <views:MultiRowTabsPanel FirstRowCount="2"/>
+                    <views:MultiRowTabsPanel FirstRowCount="3"/>
                 </ItemsPanelTemplate>
             </TabControl.ItemsPanel>
             <Interaction.Behaviors>
@@ -86,6 +86,9 @@
             </Interaction.Behaviors>
             <TabItem Header="Presets">
                 <tabs:PresetsView DataContext="{Binding PresetViewModel}"/>
+            </TabItem>
+            <TabItem Header="Archipelago">
+                <tabs:ArchipelagoView DataContext="{Binding Main}"/>
             </TabItem>
             <TabItem Header="Customize">
                 <tabs:CustomizeView DataContext="{Binding CustomizeViewModel}" />

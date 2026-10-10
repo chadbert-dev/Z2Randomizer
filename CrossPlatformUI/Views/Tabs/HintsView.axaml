@@ -61,21 +61,6 @@
                       Content="Generate Spoiler">
                 <ToolTip.Tip><TextBlock Text="{x:Static lang:Resources.GenerateSpoilerToolTip}"/></ToolTip.Tip>
             </CheckBox>
-            <CheckBox IsChecked="{Binding Main.Config.GenerateRequirementGraph}"
-                      Content="Generate Requirements Graph">
-                <ToolTip.Tip><TextBlock Text="{x:Static lang:Resources.GenerateRequirementGraphToolTip}"/></ToolTip.Tip>
-            </CheckBox>
-            <CheckBox IsChecked="{Binding Main.Config.ArchipelagoMode}"
-                      Content="Archipelago Mode">
-                <ToolTip.Tip><TextBlock Text="{x:Static lang:Resources.ArchipelagoModeToolTip}"/></ToolTip.Tip>
-            </CheckBox>
-            <TextBox Text="{Binding Main.Config.ArchipelagoSlotName}"
-                     IsVisible="{Binding Main.Config.ArchipelagoMode}"
-                     MaxLength="16"
-                     Watermark="Slot name"
-                     Margin="30,0,0,4">
-                <ToolTip.Tip><TextBlock Text="{x:Static lang:Resources.ArchipelagoSlotNameToolTip}"/></ToolTip.Tip>
-            </TextBox>
             <CheckBox
                 Classes.DifficultyOnly="{Binding Main.Config.ShareSeedAcrossDifficulty}"
                 IsChecked="{Binding Main.Config.RevealWalkthroughWalls}"
