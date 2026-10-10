@@ -15,7 +15,7 @@ public static partial class ApYamlBuilder
     /// <summary>Bumped when the layout of the file changes, so the world can reject files it can't read.</summary>
     public const int FormatVersion = 1;
     public const string GameName = "Z2R";
-    public const string ArchipelagoVersion = "0.6.9";
+    public const string ArchipelagoVersion = "0.6.7";
 
     // Item names used in starting_items
     private static readonly Collectable[] STARTING_ITEM_ORDER =

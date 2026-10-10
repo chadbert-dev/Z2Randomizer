@@ -59,7 +59,7 @@ public class ApYamlTests
             name: PlayerName
             game: Z2R
             requires:
-              version: 0.6.9
+              version: 0.6.7
             Z2R:
               rom_seed: "277201822"
               format_version: 1
