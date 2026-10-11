@@ -100,8 +100,50 @@ public partial class RequirementGraphSerializationContext : JsonSerializerContex
 public static class GraphNodeIds
 {
     public static string Location(Location location) => location.ID.ToString();
-    public static string PalaceRoom(Location location, int roomIndex) => $"{Location(location)}:room{roomIndex}";
-    public static string TownMap(Location location, TownMap map) => $"{Location(location)}:map{map.Map}";
+
+    /// <summary>
+    /// A palace room is named by what it is: the boss room is "boss", the item rooms are "item1", "item2" and so on in
+    /// the order the palace lists them, and every other room is "room" and its index in the palace. A room that is
+    /// both counts as the boss room.
+    /// </summary>
+    public static string PalaceRoom(Location location, Palace palace, Room room)
+    {
+        if (room == palace.BossRoom)
+        {
+            return $"{Location(location)}:boss";
+        }
+        int itemIndex = palace.ItemRooms.IndexOf(room);
+        if (itemIndex >= 0)
+        {
+            return $"{Location(location)}:item{itemIndex + 1}";
+        }
+        return $"{Location(location)}:room{palace.AllRooms.IndexOf(room)}";
+    }
+
+    /// <summary>
+    /// A town map that holds an item is named by who gives it, such as "WEST_TOWN_MIDO:wizard" or
+    /// "EAST_TOWN_DARUNIA:upstab_man". Bagu's note is just "BAGU". Other maps are "map" and their number.
+    /// </summary>
+    public static string TownMap(Location location, TownMap map)
+    {
+        string prefix = Location(location);
+        if (map.CollectableTextType == CollectableTextType.WIZARD && location.Town?.Type == TownType.BAGU)
+        {
+            return "BAGU";
+        }
+        string? role = map.CollectableTextType switch
+        {
+            CollectableTextType.WIZARD => "wizard",
+            CollectableTextType.TABLE => "table",
+            CollectableTextType.FOUNTAIN => "fountain",
+            CollectableTextType.DOWNSTAB_TRAINER => "downstab_man",
+            CollectableTextType.UPSTAB_TRAINER => "upstab_man",
+            _ when location.Town?.Type == TownType.NEW_KASUTO && map.Map == (int)VanillaTownMap.GRANNYS_BASEMENT => "ganon_granny",
+            _ when location.Town?.Type == TownType.NEW_KASUTO && map.Map == (int)VanillaTownMap.SPELL_TOWER_INTERIOR => "spell_tower",
+            _ => null,
+        };
+        return role == null ? $"{prefix}:map{map.Map}" : $"{prefix}:{role}";
+    }
 }
 
 /// <summary>
@@ -431,7 +473,7 @@ public static class RequirementGraphBuilder
             for (int i = 0; i < palace.AllRooms.Count; i++)
             {
                 var room = palace.AllRooms[i];
-                string id = UniqueId(GraphNodeIds.PalaceRoom(location, i));
+                string id = UniqueId(GraphNodeIds.PalaceRoom(location, palace, room));
                 ids[room] = id;
                 nodes.Add(new GraphNode(id, GraphNodeKind.PalaceRoom,
                     string.IsNullOrEmpty(room.Name) ? $"Palace {palace.Number} room {i}" : room.Name,

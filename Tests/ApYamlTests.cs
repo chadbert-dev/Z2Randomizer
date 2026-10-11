@@ -1,5 +1,6 @@
 using FluentAssertions;
 using Z2Randomizer.RandomizerCore;
+using Z2Randomizer.RandomizerCore.Overworld;
 
 namespace Z2Randomizer.Tests;
 
@@ -42,7 +43,7 @@ public class ApYamlTests
     // the hash has spaces between the icons when read from the ROM
     private static string Build(RandomizerProperties props, ApManifest manifest, RequirementRoutes routes,
         IReadOnlyList<(string NodeId, Collectable Item)>? fixedItems = null) =>
-        ApYamlBuilder.Build(props, manifest, routes, "A B C D E F", "5.2.4", fixedItems ?? []);
+        ApYamlBuilder.Build(props, manifest, routes, "A B C D E F", "5.2.4", "EAST_GREAT_PALACE:room1", fixedItems ?? []);
 
     [TestMethod]
     public void CurrentVersion_HasThreeNumbers()
@@ -70,6 +71,7 @@ public class ApYamlTests
               start_magic_containers: 4
               start_heart_containers: 4
               crystals_required: 6
+              great_palace: EAST_GREAT_PALACE:room1
               new_kasuto_basement_requirement: 7
               include_spells_in_shuffle: true
               include_sword_techs_in_shuffle: false
@@ -194,5 +196,43 @@ public class ApYamlTests
         yaml.Should().Contain("  include_spells_in_shuffle: false\n")
             .And.Contain("  include_sword_techs_in_shuffle: true\n")
             .And.Contain("  include_quest_items_in_shuffle: false\n");
+    }
+
+    [TestMethod]
+    public void Build_FailsWhenTheGreatPalaceBossHasNoRule()
+    {
+        var act = () => ApYamlBuilder.Build(Props(), Manifest(), Routes(), "A B C D E F", "5.2.4", "NOWHERE:boss", []);
+
+        act.Should().Throw<ImpossibleException>().WithMessage("*NOWHERE:boss*");
+    }
+
+    private static Location PalaceLocation(LocationID id, int palaceNumber, bool withBoss = true)
+    {
+        var palace = new Z2Randomizer.RandomizerCore.Sidescroll.Palace.Palace(palaceNumber, true);
+        var boss = new Z2Randomizer.RandomizerCore.Sidescroll.Palace.Room { Name = "boss", IsBossRoom = true };
+        palace.AllRooms.Add(boss);
+        if (withBoss)
+        {
+            palace.BossRoom = boss;
+        }
+        return new Location(id, 30, 5, 1, Continent.WEST) { Palace = palace };
+    }
+
+    [TestMethod]
+    public void GreatPalaceBoss_FindsTheGreatPalaceWhereverItIs()
+    {
+        // the Great Palace is number 7 and can be at any palace location when it is in the shuffle
+        Location[] locations = [PalaceLocation(LocationID.WEST_PALACE1, 3), PalaceLocation(LocationID.WEST_PALACE3, 7),
+            PalaceLocation(LocationID.EAST_GREAT_PALACE, 1)];
+
+        ApYamlBuilder.GreatPalaceBoss(locations).Should().Be("WEST_PALACE3:boss");
+    }
+
+    [TestMethod]
+    public void GreatPalaceBoss_FailsWithoutAGreatPalace()
+    {
+        var act = () => ApYamlBuilder.GreatPalaceBoss([PalaceLocation(LocationID.WEST_PALACE1, 3)]);
+
+        act.Should().Throw<ImpossibleException>();
     }
 }

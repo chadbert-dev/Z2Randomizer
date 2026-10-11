@@ -2872,7 +2872,8 @@ public class Hyrule
         // the spots with fixed items need rules too, so the world knows when the player can get them
         var routes = RequirementGraphBuilder.BuildRoutes(RequirementGraphBuilder.Build(worlds, props),
             new HashSet<string>(fixedItems.Select(f => f.NodeId)));
-        return ApYamlBuilder.Build(props, manifest, routes, Hash, ApYamlBuilder.CurrentVersion(), fixedItems);
+        string greatPalaceBoss = ApYamlBuilder.GreatPalaceBoss(worlds.SelectMany(w => w.AllLocations));
+        return ApYamlBuilder.Build(props, manifest, routes, Hash, ApYamlBuilder.CurrentVersion(), greatPalaceBoss, fixedItems);
     }
 
     public string GenerateSpoiler()

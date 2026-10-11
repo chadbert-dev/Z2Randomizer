@@ -207,7 +207,7 @@ public static class ApManifestBuilder
                 continue;
             }
             int page = ItemPage(new SideviewEditable<PalaceObject>(room.SideView), $"{location.ID} room {room.Name}");
-            result.Add(new ApLocation(GraphNodeIds.PalaceRoom(location, i), $"{LocationName(location)} item room",
+            result.Add(new ApLocation(GraphNodeIds.PalaceRoom(location, palace, room), $"{LocationName(location)} item room",
                 ApFlagKind.ItemPresence, ItemPresenceAddress(tableBase, room.Map), ItemPresenceMask(room.Map, page), 0));
         }
     }

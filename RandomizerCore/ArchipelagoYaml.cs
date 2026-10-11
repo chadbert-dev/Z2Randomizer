@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using Z2Randomizer.RandomizerCore.Overworld;
 
 namespace Z2Randomizer.RandomizerCore;
 
@@ -56,14 +57,35 @@ public static partial class ApYamlBuilder
 
     /// <param name="hash">The hash shown on the file select screen of the ROM.</param>
     /// <param name="randomizerVersion">The version of the randomizer that made the ROM.</param>
+    /// <param name="greatPalaceBossId">
+    /// The node id of the Great Palace's boss, such as "EAST_GREAT_PALACE:boss". It can be any palace's location when
+    /// the Great Palace is in the shuffle, since the palaces move between the locations.
+    /// </param>
     /// <param name="fixedItems">
     /// The items the randomizer placed itself in spots that are not Archipelago locations, because the player left
     /// their kind of item out of the shuffle. Node id and item.
     /// </param>
+    /// <summary>The node id of the boss of the Great Palace, wherever the Great Palace ended up.</summary>
+    public static string GreatPalaceBoss(IEnumerable<Location> locations)
+    {
+        foreach (var location in locations)
+        {
+            if (location.Palace is { Number: 7, BossRoom: { } boss } palace)
+            {
+                return GraphNodeIds.PalaceRoom(location, palace, boss);
+            }
+        }
+        throw new ImpossibleException("No location holds the Great Palace");
+    }
+
     public static string Build(RandomizerProperties props, ApManifest manifest, RequirementRoutes routes, string hash, string randomizerVersion,
-        IReadOnlyList<(string NodeId, Collectable Item)> fixedItems)
+        string greatPalaceBossId, IReadOnlyList<(string NodeId, Collectable Item)> fixedItems)
     {
         var rules = routes.Targets.ToDictionary(t => t.Target);
+        if (!rules.ContainsKey(greatPalaceBossId))
+        {
+            throw new ImpossibleException($"No rule for the Great Palace boss {greatPalaceBossId}");
+        }
         var missing = manifest.Locations.Select(l => l.NodeId).Concat(fixedItems.Select(f => f.NodeId))
             .Where(id => !rules.ContainsKey(id)).ToList();
         if (missing.Count > 0)
@@ -87,6 +109,8 @@ public static partial class ApYamlBuilder
         sb.Append("  start_magic_containers: ").Append(props.StartMagicContainers).Append('\n');
         sb.Append("  start_heart_containers: ").Append(props.StartHearts).Append('\n');
         sb.Append("  crystals_required: ").Append(props.StartGems).Append('\n');
+        // the palaces can swap places, so this says which boss location belongs to the Great Palace
+        sb.Append("  great_palace: ").Append(Key(greatPalaceBossId)).Append('\n');
         // magic containers needed before Granny's basement in New Kasuto opens
         sb.Append("  new_kasuto_basement_requirement: ").Append(props.NewKasutoBasementRequirement).Append('\n');
         // The kinds of items that are shuffled into Archipelago. For the ones that are not, the randomizer places the
