@@ -87,7 +87,7 @@
             <TabItem Header="Presets">
                 <tabs:PresetsView DataContext="{Binding PresetViewModel}"/>
             </TabItem>
-            <TabItem Header="Archipelago">
+            <TabItem Header="Archipelago" Background="{Binding ArchipelagoHeaderBackgroundObservable^}">
                 <tabs:ArchipelagoView DataContext="{Binding Main}"/>
             </TabItem>
             <TabItem Header="Customize">

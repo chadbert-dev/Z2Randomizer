@@ -26,6 +26,10 @@ public class RandomizerViewModel : ReactiveObject, IRoutableViewModel, IActivata
     [JsonIgnore]
     public IObservable<IBrush> FlagInputUnderlineObservable { get; }
 
+    /// <summary>Highlights the Archipelago tab while Archipelago mode is on, like the Hints tab does for the spoiler log.</summary>
+    [JsonIgnore]
+    public IObservable<IBrush> ArchipelagoHeaderBackgroundObservable { get; }
+
     private bool flagsValid = true;
     private bool FlagsValid { get => flagsValid; set => this.RaiseAndSetIfChanged(ref flagsValid, value); }
 
@@ -137,6 +141,11 @@ public class RandomizerViewModel : ReactiveObject, IRoutableViewModel, IActivata
             Main.GenerateRomViewModel.WhenAnyValue(x => x.IsRunning),
             (flagsValid, seedValid, slotNameValid, hasRom, isRunning) =>
                 flagsValid && seedValid && slotNameValid && hasRom && !isRunning);
+
+        // Archipelago mode is not part of the flag string, so FlagsChanged does not fire for it
+        ArchipelagoHeaderBackgroundObservable = this.WhenAnyValue(x => x.ThemeVariantName)
+            .CombineLatest(Main.WhenAnyValue(x => x.Config.ArchipelagoMode), (theme, enabled) =>
+                ThemeHelper.GetFlagAlertBackgroundBrush(theme, enabled));
 
         FlagInputUnderlineObservable = this.WhenAnyValue(x => x.ThemeVariantName)
             .CombineLatest(this.WhenAnyValue(x => x.FlagsValid), (theme, valid) =>
