@@ -2,6 +2,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:assists="clr-namespace:Material.Styles.Assists;assembly=Material.Styles"
              xmlns:vm="clr-namespace:CrossPlatformUI.ViewModels"
              xmlns:lang="clr-namespace:Z2Randomizer.CrossPlatformUI.Lang"
              mc:Ignorable="d" d:DesignWidth="900" d:DesignHeight="450"
@@ -10,28 +11,49 @@
     <Grid ColumnDefinitions="*, *">
         <StackPanel Grid.Column="0">
             <CheckBox
-                Margin="14 8 4 0"
                 IsChecked="{Binding Config.ArchipelagoMode}"
                 Content="Archipelago Mode"
             >
                 <ToolTip.Tip><TextBlock Text="{x:Static lang:Resources.ArchipelagoModeToolTip}"/></ToolTip.Tip>
             </CheckBox>
-            <TextBox
-                Margin="44 0 17 4"
-                Text="{Binding Config.ArchipelagoSlotName}"
-                IsVisible="{Binding Config.ArchipelagoMode}"
-                MaxLength="16"
-                PlaceholderText="Slot name"
-            >
-                <ToolTip.Tip><TextBlock Text="{x:Static lang:Resources.ArchipelagoSlotNameToolTip}"/></ToolTip.Tip>
-            </TextBox>
             <CheckBox
-                Margin="14 0 4 0"
                 IsChecked="{Binding Config.GenerateRequirementGraph}"
                 Content="Generate Requirements Graph"
             >
                 <ToolTip.Tip><TextBlock Text="{x:Static lang:Resources.GenerateRequirementGraphToolTip}"/></ToolTip.Tip>
             </CheckBox>
+            <!-- Outlined text field with its label sitting in the border, to match the drop-downs -->
+            <Grid Margin="17 18 17 6" IsVisible="{Binding Config.ArchipelagoMode}">
+                <Border
+                    BorderBrush="{DynamicResource MaterialDesignTextBoxBorder}"
+                    BorderThickness="1"
+                    CornerRadius="4"
+                    Padding="16 0 8 0"
+                    Height="52"
+                >
+                    <TextBox
+                        Theme="{StaticResource MaterialOnlyPresenterTextBox}"
+                        VerticalAlignment="Stretch"
+                        VerticalContentAlignment="Center"
+                        MinHeight="0"
+                        Padding="0"
+                        Text="{Binding Config.ArchipelagoSlotName}"
+                        MaxLength="16"
+                    />
+                </Border>
+                <TextBlock
+                    Text="Slot name"
+                    FontSize="12"
+                    Margin="12 -9 0 0"
+                    Padding="4 0"
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Top"
+                    IsHitTestVisible="False"
+                    Background="{DynamicResource MaterialPaperBrush}"
+                    Foreground="{DynamicResource MaterialBodyBrush}"
+                />
+                <ToolTip.Tip><TextBlock Text="{x:Static lang:Resources.ArchipelagoSlotNameToolTip}"/></ToolTip.Tip>
+            </Grid>
         </StackPanel>
         <StackPanel Grid.Column="1">
             <TextBlock
@@ -49,7 +71,6 @@
                 Text="Set on the Items tab. Anything left out is placed by the randomizer and is not a location."
             />
             <CheckBox
-                Margin="14 0 4 0"
                 IsHitTestVisible="False"
                 IsTabStop="False"
                 IsThreeState="True"
@@ -57,7 +78,6 @@
                 Content="Spells (town wizards)"
             />
             <CheckBox
-                Margin="14 0 4 0"
                 IsHitTestVisible="False"
                 IsTabStop="False"
                 IsThreeState="True"
@@ -65,7 +85,6 @@
                 Content="Sword techniques"
             />
             <CheckBox
-                Margin="14 0 4 0"
                 IsHitTestVisible="False"
                 IsTabStop="False"
                 IsThreeState="True"
