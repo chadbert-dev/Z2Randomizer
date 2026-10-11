@@ -50,21 +50,24 @@
             />
             <CheckBox
                 Margin="14 0 4 0"
-                IsEnabled="False"
+                IsHitTestVisible="False"
+                IsTabStop="False"
                 IsThreeState="True"
                 IsChecked="{Binding Config.IncludeSpellsInShuffle, Mode=OneWay}"
                 Content="Spells (town wizards)"
             />
             <CheckBox
                 Margin="14 0 4 0"
-                IsEnabled="False"
+                IsHitTestVisible="False"
+                IsTabStop="False"
                 IsThreeState="True"
                 IsChecked="{Binding Config.IncludeSwordTechsInShuffle, Mode=OneWay}"
                 Content="Sword techniques"
             />
             <CheckBox
                 Margin="14 0 4 0"
-                IsEnabled="False"
+                IsHitTestVisible="False"
+                IsTabStop="False"
                 IsThreeState="True"
                 IsChecked="{Binding Config.IncludeQuestItemsInShuffle, Mode=OneWay}"
                 Content="Town quest items (water, mirror, Bagu's note)"
