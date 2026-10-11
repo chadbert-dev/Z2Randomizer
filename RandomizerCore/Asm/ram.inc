@@ -405,6 +405,8 @@ PreviousRegion := $070a                   ; RegionNumber Link came from
 WorldNumber := $0707                      ; 0=Caves & enemy encounters, 1=West towns, 2=East towns, 3=Palace 1/2/5, 4=Palace 3/4/6, 5=Great Palace
 PreviousRegionNumber := $070a             ; [Z2R] Unused; made obsolete by FixContinentTransitions; [Z2] PreviousRegionNumber
 PalaceChrBank2 := $070b                   ; [Z2R] Unused; [Z2] Written as CHR bank * 2 but never read
+MagicRefillQueue := $070c                 ; Magic still to be added to CurrentMagic. Each frame the game moves 1 out of this and 2 into CurrentMagic (up to MagicContainers * 32 - 1). Jars add to it and a magic container sets it to MagicContainers << 4
+LifeRefillQueue := $070d                  ; Life still to be added to CurrentLife, drained like MagicRefillQueue (CurrentLife up to HeartContainers * 32 - 1). A heart container sets it to $F0
 SideviewObjectPage := $0717               ; 0-3 page of current sideview object being processed
 ScrollDirection := $071f                  ; Current scroll direction. 1=Scrolling right, 2=Scrolling left
 ColumnScrollDirection := $0720            ; Scroll direction that is updated only when scrolling crosses a column boundary
