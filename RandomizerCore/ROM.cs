@@ -2947,7 +2947,9 @@ DrawHiddenJarBank5:
     {
         if (!biome.UsesVanillaMap())
         {
-            Put(0x8382, (byte)(hiddenPalaceLocation.Y + 2));
+            // The flute has to be played on the tile two rows above the hidden palace, and the game compares Link's
+            // position in the same units as the location table (YRaw), not the rows counted from the top of the map
+            Put(0x8382, (byte)(hiddenPalaceLocation.YRaw - 2));
             Put(0x8388, (byte)hiddenPalaceLocation.Xpos);
         }
         int pos = hiddenPalaceLocation.YRaw;
