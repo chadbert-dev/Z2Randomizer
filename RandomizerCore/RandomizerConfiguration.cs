@@ -1492,7 +1492,11 @@ public sealed partial class RandomizerConfiguration() : INotifyPropertyChanged
             // Every major item is the AP item, so there's nothing for hints to point at
             properties.SpellItemHints = false;
             properties.HelpfulHints = HelpfulHintOption.NONE;
-            properties.TownNameHints = false;
+            // The wizards keep their real spells when spells are out of the pool, so their signs can still point at them
+            if (properties.IncludeSpellsInShuffle)
+            {
+                properties.TownNameHints = false;
+            }
         }
 
         //Misc.

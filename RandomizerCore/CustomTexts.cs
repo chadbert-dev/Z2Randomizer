@@ -689,7 +689,7 @@ public class CustomTexts
 
             if (props.TownNameHints)
             {
-                GenerateTownNameHints(texts, locations, props.LinkedFireSpell != null);
+                GenerateTownNameHints(texts, locations, props);
             }
         } while (TextLength(texts) > MAX_TEXT_LENGTH);
 
@@ -751,10 +751,16 @@ public class CustomTexts
         return baguHint;
     }
 
-    private static void GenerateTownNameHints(List<Text> texts, IEnumerable<Location> locations, bool linkedFire)
+    private static void GenerateTownNameHints(List<Text> texts, IEnumerable<Location> locations, RandomizerProperties props)
     {
+        bool linkedFire = props.LinkedFireSpell != null;
         foreach (Location location in locations.Where(i => i.Town?.GetWizard() != null))
         {
+            // In Archipelago mode, a wizard in the pool holds the AP item, which a sign can't name
+            if (props.ArchipelagoMode && ArchipelagoItems.IsInPool(location.Town!.GetWizard()!, location.Town, props))
+            {
+                continue;
+            }
             if(location?.Town?.Type != null && TOWN_SIGN_INDEXES.TryGetValue((TownType)location?.Town?.Type!, out int index))
             {
                 texts[index] = GenerateTownSignHint((Collectable)location.Town.GetWizard()!.Collectable!, linkedFire);
