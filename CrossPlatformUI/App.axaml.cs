@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
@@ -150,6 +150,12 @@ public sealed partial class App : Application // , IDisposable
         // If it's unset, it will change to the new system theme.
         ActualThemeVariantChanged += (_, _) =>
             ThemeHelper.SetTheme(main.RandomizerViewModel.ThemeVariantName);
+        // On Linux the platform colors can arrive after startup without ActualThemeVariant changing.
+        if (PlatformSettings is { } platformSettings)
+        {
+            platformSettings.ColorValuesChanged += (_, _) => Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+                ThemeHelper.SetTheme(main.RandomizerViewModel.ThemeVariantName));
+        }
 
         base.OnFrameworkInitializationCompleted();
     }

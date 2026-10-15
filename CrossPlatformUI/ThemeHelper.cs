@@ -42,7 +42,8 @@ public class ThemeHelper
                 }
                 // Workaround for `ActualThemeVariant` not being set yet on startup in Linux 
                 var platformTheme = app.PlatformSettings?.GetColorValues().ThemeVariant;
-                if (platformTheme is not null)
+                // It can be Unspecified before the desktop portal answers, which must not be taken as light.
+                if (platformTheme is PlatformThemeVariant.Dark or PlatformThemeVariant.Light)
                 {
                     return platformTheme == PlatformThemeVariant.Dark;
                 }
