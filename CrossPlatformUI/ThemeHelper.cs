@@ -59,8 +59,12 @@ public class ThemeHelper
             return;
         }
 
+        var dark = IsDark(name);
+        // Pin Avalonia's own variant to the same answer. Left on Default it follows what Avalonia detects, which can
+        // disagree with the platform colors on some Linux desktops and leaves the buttons in the other theme.
+        app.RequestedThemeVariant = dark ? ThemeVariant.Dark : ThemeVariant.Light;
         var themeBootstrap = app.LocateMaterialTheme<MaterialTheme>();
-        themeBootstrap.CurrentTheme = IsDark(name) ? DarkMaterialTheme : LightMaterialTheme;
+        themeBootstrap.CurrentTheme = dark ? DarkMaterialTheme : LightMaterialTheme;
     }
 
     public static IBrush GetFlagAlertBackgroundBrush(string? theme, bool alert)
