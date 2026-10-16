@@ -71,22 +71,22 @@
                 Text="Set on the Items tab. Anything left out is placed by the randomizer and is not a location."
             />
             <CheckBox
-                IsHitTestVisible="False"
-                IsTabStop="False"
+                Classes="ShowStateWhenDisabled"
+                IsEnabled="False"
                 IsThreeState="True"
                 IsChecked="{Binding Config.IncludeSpellsInShuffle, Mode=OneWay}"
                 Content="Spells (town wizards)"
             />
             <CheckBox
-                IsHitTestVisible="False"
-                IsTabStop="False"
+                Classes="ShowStateWhenDisabled"
+                IsEnabled="False"
                 IsThreeState="True"
                 IsChecked="{Binding Config.IncludeSwordTechsInShuffle, Mode=OneWay}"
                 Content="Sword techniques"
             />
             <CheckBox
-                IsHitTestVisible="False"
-                IsTabStop="False"
+                Classes="ShowStateWhenDisabled"
+                IsEnabled="False"
                 IsThreeState="True"
                 IsChecked="{Binding Config.IncludeQuestItemsInShuffle, Mode=OneWay}"
                 Content="Town quest items (water, mirror, Bagu's note)"
