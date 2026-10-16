@@ -76,8 +76,8 @@ public class ApYamlTests
               include_spells_in_shuffle: true
               include_sword_techs_in_shuffle: false
               include_quest_items_in_shuffle: true
-              prioritize_palace_items: false
               starting_items: {Candle: 1, Life Spell: 1, Fairy Spell: 1, Downstab: 1}
+              priority_locations: []
               locations:
                 WEST_CAVE_TROPHY: {address: 1552, mask: 8, collected: 0}
                 WEST_GRASS: {address: 1555, mask: 32, collected: 0}
@@ -215,12 +215,20 @@ public class ApYamlTests
     }
 
     [TestMethod]
-    public void Build_ReportsPrioritizePalaceItems()
+    public void Build_PrioritizesThePalaceItemLocationsWhenAsked()
     {
+        var manifest = Manifest() with { Locations = [.. Manifest().Locations,
+            new ApLocation("EAST_PALACE:room2", "Room", ApFlagKind.ItemPresence, 1560, 4, 0)] };
+        var routes = Routes();
+        routes = routes with { Targets = [.. routes.Targets,
+            new TargetAccess("EAST_PALACE:room2", "Room", GraphNodeKind.PalaceRoom, true, false, [new TargetRoute([], [])])] };
         var props = Props();
+
+        Build(props, manifest, routes).Should().Contain("  priority_locations: []\n");
+
         props.PrioritizePalaceItems = true;
 
-        Build(props, Manifest(), Routes()).Should().Contain("  prioritize_palace_items: true\n");
+        Build(props, manifest, routes).Should().Contain("  priority_locations: [EAST_PALACE:room2]\n");
     }
 
     [TestMethod]

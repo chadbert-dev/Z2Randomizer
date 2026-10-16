@@ -334,8 +334,8 @@ Archipelago locations and the randomizer places those items itself.
 Also writes an ap.yaml file for the Archipelago world with the slot name, seed, logic options, the RAM flag of every AP item location and what is needed to reach each of them.</value>
 	</data>
 	<data name="PrioritizePalaceItemsToolTip" xml:space="preserve">
-<value>Writes prioritize_palace_items to the ap.yaml so the Archipelago world makes the item locations
-in the palaces priority locations, which it fills with progression items first.</value>
+<value>Adds the item locations of the palaces to the priority_locations in the ap.yaml, so Archipelago
+fills them with progression items first.</value>
 	</data>
 	<data name="ArchipelagoSlotNameToolTip" xml:space="preserve">
 <value>Your slot name from the Archipelago YAML. It is stored in the ROM together with the seed so the
