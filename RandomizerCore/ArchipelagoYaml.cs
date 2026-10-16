@@ -119,6 +119,8 @@ public static partial class ApYamlBuilder
         sb.Append("  include_spells_in_shuffle: ").Append(props.IncludeSpellsInShuffle ? "true" : "false").Append('\n');
         sb.Append("  include_sword_techs_in_shuffle: ").Append(props.IncludeSwordTechsInShuffle ? "true" : "false").Append('\n');
         sb.Append("  include_quest_items_in_shuffle: ").Append(props.IncludeQuestItemsInShuffle ? "true" : "false").Append('\n');
+        // asks the world to make the palace item locations priority locations
+        sb.Append("  prioritize_palace_items: ").Append(props.PrioritizePalaceItems ? "true" : "false").Append('\n');
         sb.Append("  starting_items: {")
             .Append(string.Join(", ", StartingItems(props).Select(c => $"{Scalar(ItemName(c))}: 1"))).Append("}\n");
 

@@ -839,6 +839,13 @@ public sealed partial class RandomizerConfiguration() : INotifyPropertyChanged
     private bool archipelagoMode = false;
 
     /// <summary>
+    /// Written to the Archipelago YAML so the apworld can make the palace locations priority locations.
+    /// </summary>
+    [Reactive]
+    [IgnoreInFlags]
+    private bool prioritizePalaceItems = false;
+
+    /// <summary>
     /// The slot name from the player's Archipelago YAML, stored in the ROM. At most 16 characters.
     /// </summary>
     [Reactive]
@@ -1482,6 +1489,7 @@ public sealed partial class RandomizerConfiguration() : INotifyPropertyChanged
         properties.TownNameHints = enableTownNameHints ?? GetIndeterminateFlagValue(r);
 
         properties.ArchipelagoMode = archipelagoMode;
+        properties.PrioritizePalaceItems = prioritizePalaceItems;
         if (archipelagoMode)
         {
             if (ArchipelagoSignature.ValidateSlotName(archipelagoSlotName?.Trim()) is { } slotNameError)

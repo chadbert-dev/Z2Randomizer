@@ -76,6 +76,7 @@ public class ApYamlTests
               include_spells_in_shuffle: true
               include_sword_techs_in_shuffle: false
               include_quest_items_in_shuffle: true
+              prioritize_palace_items: false
               starting_items: {Candle: 1, Life Spell: 1, Fairy Spell: 1, Downstab: 1}
               locations:
                 WEST_CAVE_TROPHY: {address: 1552, mask: 8, collected: 0}
@@ -211,6 +212,15 @@ public class ApYamlTests
 
         yaml.Should().Contain("  events:\n    WEST_PALACE1:crystal: {address: 1933, mask: 255, collected: 1}\n")
             .And.NotContain("  locations:\n    WEST_CAVE_TROPHY: {address: 1552, mask: 8, collected: 0}\n    WEST_GRASS: {address: 1555, mask: 32, collected: 0}\n    WEST_PALACE1");
+    }
+
+    [TestMethod]
+    public void Build_ReportsPrioritizePalaceItems()
+    {
+        var props = Props();
+        props.PrioritizePalaceItems = true;
+
+        Build(props, Manifest(), Routes()).Should().Contain("  prioritize_palace_items: true\n");
     }
 
     [TestMethod]

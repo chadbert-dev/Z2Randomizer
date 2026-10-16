@@ -142,6 +142,8 @@ public class RandomizerProperties
     [NotMapped]
     public bool ArchipelagoMode { get; set; }
     [NotMapped]
+    public bool PrioritizePalaceItems { get; set; }
+    [NotMapped]
     public string ArchipelagoSlotName { get; set; } = "";
 
     //Enemies
