@@ -207,7 +207,7 @@ public static class ApManifestBuilder
                 continue;
             }
             int page = ItemPage(new SideviewEditable<PalaceObject>(room.SideView), $"{location.ID} room {room.Name}");
-            result.Add(new ApLocation(GraphNodeIds.PalaceRoom(location, palace, room), $"{LocationName(location)} item room",
+            result.Add(new ApLocation(GraphNodeIds.PalaceRoom(location, palace, room), $"{PalaceName(palace)} item room",
                 ApFlagKind.ItemPresence, ItemPresenceAddress(tableBase, room.Map), ItemPresenceMask(room.Map, page), 0));
         }
     }
@@ -250,6 +250,9 @@ public static class ApManifestBuilder
             }
         }
     }
+
+    /// <summary>Palaces move between locations, so they are named for the palace itself rather than the location holding it.</summary>
+    private static string PalaceName(Palace palace) => $"Palace {palace.Number}";
 
     private static string LocationName(Location location) =>
         string.IsNullOrEmpty(location.Name) ? location.ID.ToString() : location.Name;
