@@ -80,6 +80,7 @@ public class ApYamlTests
               locations:
                 WEST_CAVE_TROPHY: {address: 1552, mask: 8, collected: 0}
                 WEST_GRASS: {address: 1555, mask: 32, collected: 0}
+              events: {}
               fixed_items: {}
               rules:
                 EAST_GREAT_PALACE:room1: [[DOWNSTAB, GLOVE, HAMMER, KEY, RAFT, UPSTAB]]

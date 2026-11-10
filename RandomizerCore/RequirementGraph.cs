@@ -120,6 +120,9 @@ public static class GraphNodeIds
         return $"{Location(location)}:room{palace.AllRooms.IndexOf(room)}";
     }
 
+    /// <summary>The event of placing the crystal in the statue of the palace at a location, after its boss is beaten.</summary>
+    public static string PalaceCrystal(Location location) => $"{Location(location)}:crystal";
+
     /// <summary>
     /// A town map that holds an item is named by who gives it, such as "WEST_TOWN_MIDO:wizard" or
     /// "EAST_TOWN_DARUNIA:upstab_man". Bagu's note is just "BAGU". Other maps are "map" and their number.

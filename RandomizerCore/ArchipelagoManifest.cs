@@ -17,6 +17,8 @@ public enum ApFlagKind
     Wizard,
     /// <summary>A bit in the misc flags (trainers, Bagu, mirror table, fountain). It is set when the item is received.</summary>
     Misc,
+    /// <summary>A flag that is not an item location, but an event the logic cares about. It is set when the event happens.</summary>
+    Event,
 }
 
 /// <param name="NodeId">The id of the node in the requirement graph.</param>
@@ -61,6 +63,8 @@ public static class ApManifestBuilder
 
     public const int WIZARD_FLAGS = 0x077a;
     public const int MISC_FLAGS = 0x0795;
+    /// <summary>The crystal-placed flags of palaces 1 to 6 are the consecutive bytes after this (Crystal1Placed in ram.inc).</summary>
+    public const int CRYSTAL_PLACED_FLAGS = 0x078c;
 
     private const int CAVES_WEST = 0x0600;
     private const int CAVES_DM_AND_MAZE = 0x0620;
@@ -124,6 +128,8 @@ public static class ApManifestBuilder
             }
         }
 
+        locations.AddRange(PalaceCrystalEvents(worlds.SelectMany(w => w.AllLocations)));
+
         List<string> warnings = [];
         foreach (var group in locations.GroupBy(l => (l.Address, l.Mask)).Where(g => g.Count() > 1))
         {
@@ -132,6 +138,20 @@ public static class ApManifestBuilder
         }
 
         return new ApManifest(props.Seed, props.Flags, props.ArchipelagoSlotName, DESCRIPTION, locations, warnings);
+    }
+
+    /// <summary>
+    /// Placing the crystal in the statue of a palace after its boss is an event, even when the palace holds no AP item.
+    /// The Great Palace has no crystal.
+    /// </summary>
+    public static IEnumerable<ApLocation> PalaceCrystalEvents(IEnumerable<Location> locations)
+    {
+        foreach (var location in locations.Where(l => l.Palace is { Number: >= 1 and <= 6 }))
+        {
+            var palace = location.Palace!;
+            yield return new ApLocation(GraphNodeIds.PalaceCrystal(location), $"{PalaceName(palace)} crystal",
+                ApFlagKind.Event, CRYSTAL_PLACED_FLAGS + palace.Number, 0xff, 1);
+        }
     }
 
     // Where the item byte of each overworld location with a shuffled item is in the ROM. Entering a cave goes through a

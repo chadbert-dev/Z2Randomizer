@@ -56,7 +56,18 @@ public class ApManifestTests
         var manifest = ApManifestBuilder.Build([], [location], null!, Props());
 
         manifest.Locations.Should().ContainSingle().Which.Should().Be(new ApLocation(
-            "WEST_PALACE1:item1", "WEST_PALACE1 item room", ApFlagKind.ItemPresence, 0x0682, 0x02, 0));
+            "WEST_PALACE1:item1", "Palace 1 item room", ApFlagKind.ItemPresence, 0x0682, 0x02, 0));
+    }
+
+    [TestMethod]
+    public void Build_PalaceCrystal_IsAnEventAtThePalaceNumbersFlag()
+    {
+        // palace 3 sits at the location of palace 1, and the Great Palace has no crystal
+        var swapped = new Location(LocationID.WEST_PALACE1, 30, 5, 1, Continent.WEST) { Palace = new Palace(3, true) };
+        var great = new Location(LocationID.EAST_GREAT_PALACE, 30, 5, 1, Continent.EAST) { Palace = new Palace(7, true) };
+
+        ApManifestBuilder.PalaceCrystalEvents([swapped, great]).Should().ContainSingle().Which.Should().Be(new ApLocation(
+            "WEST_PALACE1:crystal", "Palace 3 crystal", ApFlagKind.Event, 0x078f, 0xff, 1));
     }
 
     [TestMethod]

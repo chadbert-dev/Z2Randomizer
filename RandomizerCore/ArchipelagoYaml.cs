@@ -122,10 +122,26 @@ public static partial class ApYamlBuilder
             .Append(string.Join(", ", StartingItems(props).Select(c => $"{Scalar(ItemName(c))}: 1"))).Append("}\n");
 
         sb.Append("  locations:\n");
-        foreach (var location in manifest.Locations.OrderBy(l => l.NodeId, StringComparer.Ordinal))
+        foreach (var location in manifest.Locations.Where(l => l.Kind != ApFlagKind.Event).OrderBy(l => l.NodeId, StringComparer.Ordinal))
         {
             sb.Append("    ").Append(Key(location.NodeId))
                 .Append($": {{address: {location.Address}, mask: {location.Mask}, collected: {location.CollectedBitValue}}}\n");
+        }
+
+        // flags that are not item locations, such as placing a crystal in a palace statue
+        var events = manifest.Locations.Where(l => l.Kind == ApFlagKind.Event).OrderBy(l => l.NodeId, StringComparer.Ordinal).ToList();
+        if (events.Count == 0)
+        {
+            sb.Append("  events: {}\n");
+        }
+        else
+        {
+            sb.Append("  events:\n");
+            foreach (var evt in events)
+            {
+                sb.Append("    ").Append(Key(evt.NodeId))
+                    .Append($": {{address: {evt.Address}, mask: {evt.Mask}, collected: {evt.CollectedBitValue}}}\n");
+            }
         }
 
         if (fixedItems.Count == 0)
