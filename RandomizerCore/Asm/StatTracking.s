@@ -122,6 +122,13 @@ SaveTimestampForPalace:
     dec $0794
     jsr FlagHudUpdate
     ldy PalaceNumber
+    ; The vanilla code that sets the crystal placed flag is skipped by this hook, so set it here. The flag is
+    ; indexed by the post-shuffle palace number, and the Archipelago events read it.
+    cpy #7
+    bcs @SkipCrystalFlag ; the Great Palace has no crystal
+        lda #1
+        sta Crystal1Placed-1,y
+@SkipCrystalFlag:
 .ifdef FLUTE_WARP_CLEARED_PALACES
 .import PowersOfTwo
     lda FluteWarpFlags

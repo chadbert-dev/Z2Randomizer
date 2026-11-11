@@ -99,7 +99,28 @@ public partial class RequirementGraphSerializationContext : JsonSerializerContex
 /// </summary>
 public static class GraphNodeIds
 {
-    public static string Location(Location location) => location.ID.ToString();
+    /// <summary>
+    /// The id of a location. A location holding a palace drops the continent prefix, so a palace's nodes read as
+    /// "PALACE1:boss" or "GREAT_PALACE:boss" rather than "WEST_PALACE1:boss".
+    /// </summary>
+    public static string Location(Location location)
+    {
+        string name = location.ID.ToString();
+        if (location.Palace == null)
+        {
+            return name;
+        }
+        foreach (string prefix in PALACE_CONTINENT_PREFIXES)
+        {
+            if (name.StartsWith(prefix, StringComparison.Ordinal))
+            {
+                return name[prefix.Length..];
+            }
+        }
+        return name;
+    }
+
+    private static readonly string[] PALACE_CONTINENT_PREFIXES = ["WEST_", "EAST_", "MI_", "DM_"];
 
     /// <summary>
     /// A palace room is named by what it is: the boss room is "boss", the item rooms are "item1", "item2" and so on in

@@ -200,6 +200,20 @@ public class ApYamlTests
     }
 
     [TestMethod]
+    public void Build_WritesEventsWithoutNeedingARule()
+    {
+        var manifest = Manifest() with
+        {
+            Locations = [.. Manifest().Locations, new ApLocation("WEST_PALACE1:crystal", "Palace 1 crystal", ApFlagKind.Event, 0x078d, 0xff, 1)]
+        };
+
+        string yaml = Build(Props(), manifest, Routes());
+
+        yaml.Should().Contain("  events:\n    WEST_PALACE1:crystal: {address: 1933, mask: 255, collected: 1}\n")
+            .And.NotContain("  locations:\n    WEST_CAVE_TROPHY: {address: 1552, mask: 8, collected: 0}\n    WEST_GRASS: {address: 1555, mask: 32, collected: 0}\n    WEST_PALACE1");
+    }
+
+    [TestMethod]
     public void Build_FailsWhenTheGreatPalaceBossHasNoRule()
     {
         var act = () => ApYamlBuilder.Build(Props(), Manifest(), Routes(), "A B C D E F", "5.2.4", "NOWHERE:boss", []);
@@ -226,7 +240,7 @@ public class ApYamlTests
         Location[] locations = [PalaceLocation(LocationID.WEST_PALACE1, 3), PalaceLocation(LocationID.WEST_PALACE3, 7),
             PalaceLocation(LocationID.EAST_GREAT_PALACE, 1)];
 
-        ApYamlBuilder.GreatPalaceBoss(locations).Should().Be("WEST_PALACE3:boss");
+        ApYamlBuilder.GreatPalaceBoss(locations).Should().Be("PALACE3:boss");
     }
 
     [TestMethod]

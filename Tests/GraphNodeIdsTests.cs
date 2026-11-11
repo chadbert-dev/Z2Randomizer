@@ -73,7 +73,7 @@ public class GraphNodeIdsTests
     {
         var (location, palace, boss, _, _) = PalaceWith(1);
 
-        GraphNodeIds.PalaceRoom(location, palace, boss).Should().Be("WEST_PALACE1:boss");
+        GraphNodeIds.PalaceRoom(location, palace, boss).Should().Be("PALACE1:boss");
     }
 
     [TestMethod]
@@ -86,7 +86,7 @@ public class GraphNodeIdsTests
         var (location, palace, _, items, _) = PalaceWith(itemRooms);
 
         items.Select(r => GraphNodeIds.PalaceRoom(location, palace, r)).Should()
-            .Equal(Enumerable.Range(1, itemRooms).Select(i => $"WEST_PALACE1:item{i}"));
+            .Equal(Enumerable.Range(1, itemRooms).Select(i => $"PALACE1:item{i}"));
     }
 
     [TestMethod]
@@ -94,7 +94,7 @@ public class GraphNodeIdsTests
     {
         var (location, palace, _, _, other) = PalaceWith(2);
 
-        GraphNodeIds.PalaceRoom(location, palace, other).Should().Be("WEST_PALACE1:room0");
+        GraphNodeIds.PalaceRoom(location, palace, other).Should().Be("PALACE1:room0");
     }
 
     [TestMethod]
@@ -103,6 +103,6 @@ public class GraphNodeIdsTests
         var (location, palace, boss, _, _) = PalaceWith(1);
         palace.ItemRooms.Add(boss);
 
-        GraphNodeIds.PalaceRoom(location, palace, boss).Should().Be("WEST_PALACE1:boss");
+        GraphNodeIds.PalaceRoom(location, palace, boss).Should().Be("PALACE1:boss");
     }
 }

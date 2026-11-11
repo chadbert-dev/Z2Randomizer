@@ -86,7 +86,8 @@ public static partial class ApYamlBuilder
         {
             throw new ImpossibleException($"No rule for the Great Palace boss {greatPalaceBossId}");
         }
-        var missing = manifest.Locations.Select(l => l.NodeId).Concat(fixedItems.Select(f => f.NodeId))
+        // events are not graph nodes, they happen when the boss of the palace is beaten, which has its own rule
+        var missing = manifest.Locations.Where(l => l.Kind != ApFlagKind.Event).Select(l => l.NodeId).Concat(fixedItems.Select(f => f.NodeId))
             .Where(id => !rules.ContainsKey(id)).ToList();
         if (missing.Count > 0)
         {
