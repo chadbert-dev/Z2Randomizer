@@ -81,7 +81,6 @@ public class ApYamlTests
               locations:
                 WEST_CAVE_TROPHY: {address: 1552, mask: 8, collected: 0}
                 WEST_GRASS: {address: 1555, mask: 32, collected: 0}
-              events: {}
               fixed_items: {}
               rules:
                 EAST_GREAT_PALACE:room1: [[DOWNSTAB, GLOVE, HAMMER, KEY, RAFT, UPSTAB]]
@@ -201,17 +200,23 @@ public class ApYamlTests
     }
 
     [TestMethod]
-    public void Build_WritesEventsWithoutNeedingARule()
+    public void Build_WritesACrystalAsALocationWithTheRuleOfTheBossAndAFixedItem()
     {
         var manifest = Manifest() with
         {
-            Locations = [.. Manifest().Locations, new ApLocation("WEST_PALACE1:crystal", "Palace 1 crystal", ApFlagKind.Event, 0x078d, 0xff, 1)]
+            Locations = [.. Manifest().Locations,
+                new ApLocation("PALACE1:crystal", "Palace 1 crystal", ApFlagKind.Event, 0x078d, 0xff, 1, "Crystal 1")]
         };
+        var routes = Routes();
+        routes = routes with { Targets = [.. routes.Targets,
+            new TargetAccess("PALACE1:boss", "Boss", GraphNodeKind.PalaceRoom, false, true, [new TargetRoute(["HAMMER"], [])])] };
 
-        string yaml = Build(Props(), manifest, Routes());
+        string yaml = Build(Props(), manifest, routes);
 
-        yaml.Should().Contain("  events:\n    WEST_PALACE1:crystal: {address: 1933, mask: 255, collected: 1}\n")
-            .And.NotContain("  locations:\n    WEST_CAVE_TROPHY: {address: 1552, mask: 8, collected: 0}\n    WEST_GRASS: {address: 1555, mask: 32, collected: 0}\n    WEST_PALACE1");
+        yaml.Should().Contain("    PALACE1:crystal: {address: 1933, mask: 255, collected: 1}\n")
+            .And.Contain("  fixed_items:\n    PALACE1:crystal: Crystal 1\n")
+            .And.Contain("    PALACE1:crystal: [[HAMMER]]\n")
+            .And.NotContain("events");
     }
 
     [TestMethod]
@@ -219,10 +224,11 @@ public class ApYamlTests
     {
         var manifest = Manifest() with { Locations = [.. Manifest().Locations,
             new ApLocation("EAST_PALACE:room2", "Room", ApFlagKind.ItemPresence, 1560, 4, 0),
-            new ApLocation("EAST_PALACE:crystal", "Crystal", ApFlagKind.Event, 0x078d, 0xff, 1)] };
+            new ApLocation("EAST_PALACE:crystal", "Crystal", ApFlagKind.Event, 0x078d, 0xff, 1, "Crystal 1")] };
         var routes = Routes();
         routes = routes with { Targets = [.. routes.Targets,
-            new TargetAccess("EAST_PALACE:room2", "Room", GraphNodeKind.PalaceRoom, true, false, [new TargetRoute([], [])])] };
+            new TargetAccess("EAST_PALACE:room2", "Room", GraphNodeKind.PalaceRoom, true, false, [new TargetRoute([], [])]),
+            new TargetAccess("EAST_PALACE:boss", "Boss", GraphNodeKind.PalaceRoom, false, true, [new TargetRoute([], [])])] };
         var props = Props();
 
         Build(props, manifest, routes).Should().Contain("  priority_locations: []\n");

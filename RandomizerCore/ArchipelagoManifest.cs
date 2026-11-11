@@ -17,7 +17,7 @@ public enum ApFlagKind
     Wizard,
     /// <summary>A bit in the misc flags (trainers, Bagu, mirror table, fountain). It is set when the item is received.</summary>
     Misc,
-    /// <summary>A flag that is not an item location, but an event the logic cares about. It is set when the event happens.</summary>
+    /// <summary>A flag set when an event happens, such as placing a crystal in a palace statue. The location holds a fixed item.</summary>
     Event,
 }
 
@@ -25,13 +25,15 @@ public enum ApFlagKind
 /// <param name="Address">CPU address of the RAM byte holding the flag.</param>
 /// <param name="Mask">The bit(s) of that byte that change when the location is checked.</param>
 /// <param name="CollectedBitValue">Value (0 or 1) the bit has once the location has been checked.</param>
+/// <param name="FixedItem">The Archipelago item the location always holds, such as "Crystal 1". Null when the multiworld decides.</param>
 public record ApLocation(
     string NodeId,
     string Name,
     ApFlagKind Kind,
     int Address,
     int Mask,
-    int CollectedBitValue);
+    int CollectedBitValue,
+    string? FixedItem = null);
 
 public record ApManifest(
     string? Seed,
@@ -141,8 +143,8 @@ public static class ApManifestBuilder
     }
 
     /// <summary>
-    /// Placing the crystal in the statue of a palace after its boss is an event, even when the palace holds no AP item.
-    /// The Great Palace has no crystal.
+    /// Placing the crystal in the statue of a palace after its boss is a location that sends out "Crystal N", even when
+    /// the palace holds no AP item. The Great Palace has no crystal.
     /// </summary>
     public static IEnumerable<ApLocation> PalaceCrystalEvents(IEnumerable<Location> locations)
     {
@@ -150,7 +152,7 @@ public static class ApManifestBuilder
         {
             var palace = location.Palace!;
             yield return new ApLocation(GraphNodeIds.PalaceCrystal(location), $"{PalaceName(palace)} crystal",
-                ApFlagKind.Event, CRYSTAL_PLACED_FLAGS + palace.Number, 0xff, 1);
+                ApFlagKind.Event, CRYSTAL_PLACED_FLAGS + palace.Number, 0xff, 1, $"Crystal {palace.Number}");
         }
     }
 

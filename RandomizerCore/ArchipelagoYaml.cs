@@ -86,8 +86,9 @@ public static partial class ApYamlBuilder
         {
             throw new ImpossibleException($"No rule for the Great Palace boss {greatPalaceBossId}");
         }
-        // events are not graph nodes, they happen when the boss of the palace is beaten, which has its own rule
-        var missing = manifest.Locations.Where(l => l.Kind != ApFlagKind.Event).Select(l => l.NodeId).Concat(fixedItems.Select(f => f.NodeId))
+        // a crystal is not a graph node, it is placed when the boss of the palace is beaten, so it uses the rule of the boss
+        string RuleId(ApLocation l) => l.Kind == ApFlagKind.Event ? GraphNodeIds.PalaceCrystalBoss(l.NodeId) : l.NodeId;
+        var missing = manifest.Locations.Select(RuleId).Concat(fixedItems.Select(f => f.NodeId))
             .Where(id => !rules.ContainsKey(id)).ToList();
         if (missing.Count > 0)
         {
@@ -130,47 +131,37 @@ public static partial class ApYamlBuilder
         sb.Append("  priority_locations: [").Append(string.Join(", ", priorityIds.Select(Key))).Append("]\n");
 
         sb.Append("  locations:\n");
-        foreach (var location in manifest.Locations.Where(l => l.Kind != ApFlagKind.Event).OrderBy(l => l.NodeId, StringComparer.Ordinal))
+        foreach (var location in manifest.Locations.OrderBy(l => l.NodeId, StringComparer.Ordinal))
         {
             sb.Append("    ").Append(Key(location.NodeId))
                 .Append($": {{address: {location.Address}, mask: {location.Mask}, collected: {location.CollectedBitValue}}}\n");
         }
 
-        // flags that are not item locations, such as placing a crystal in a palace statue
-        var events = manifest.Locations.Where(l => l.Kind == ApFlagKind.Event).OrderBy(l => l.NodeId, StringComparer.Ordinal).ToList();
-        if (events.Count == 0)
-        {
-            sb.Append("  events: {}\n");
-        }
-        else
-        {
-            sb.Append("  events:\n");
-            foreach (var evt in events)
-            {
-                sb.Append("    ").Append(Key(evt.NodeId))
-                    .Append($": {{address: {evt.Address}, mask: {evt.Mask}, collected: {evt.CollectedBitValue}}}\n");
-            }
-        }
-
-        if (fixedItems.Count == 0)
+        // the crystals are always placed in their palace
+        var allFixed = fixedItems.Select(f => (f.NodeId, Name: ItemName(f.Item)))
+            .Concat(manifest.Locations.Where(l => l.FixedItem != null).Select(l => (l.NodeId, Name: l.FixedItem!)))
+            .OrderBy(f => f.NodeId, StringComparer.Ordinal).ToList();
+        if (allFixed.Count == 0)
         {
             sb.Append("  fixed_items: {}\n");
         }
         else
         {
             sb.Append("  fixed_items:\n");
-            foreach (var (nodeId, item) in fixedItems.OrderBy(f => f.NodeId, StringComparer.Ordinal))
+            foreach (var (nodeId, name) in allFixed)
             {
-                sb.Append("    ").Append(Key(nodeId)).Append(": ").Append(Scalar(ItemName(item))).Append('\n');
+                sb.Append("    ").Append(Key(nodeId)).Append(": ").Append(Scalar(name)).Append('\n');
             }
         }
 
         sb.Append("  rules:\n");
-        foreach (var target in routes.Targets.OrderBy(t => t.Target, StringComparer.Ordinal))
+        var ruleTargets = routes.Targets.Select(t => (Id: t.Target, t.Routes))
+            .Concat(manifest.Locations.Where(l => l.Kind == ApFlagKind.Event).Select(l => (Id: l.NodeId, rules[RuleId(l)].Routes)));
+        foreach (var target in ruleTargets.OrderBy(t => t.Id, StringComparer.Ordinal))
         {
             // alternatives (OR) of requirements that are all needed (AND). [[]] is free, [] can't be reached.
             var alternatives = target.Routes.Select(r => "[" + string.Join(", ", r.Requirements) + "]");
-            sb.Append("    ").Append(Key(target.Target)).Append(": [").Append(string.Join(", ", alternatives)).Append("]\n");
+            sb.Append("    ").Append(Key(target.Id)).Append(": [").Append(string.Join(", ", alternatives)).Append("]\n");
         }
         return sb.ToString();
     }
