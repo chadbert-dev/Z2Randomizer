@@ -105,4 +105,32 @@ public class GraphNodeIdsTests
 
         GraphNodeIds.PalaceRoom(location, palace, boss).Should().Be("PALACE1:boss");
     }
+
+    [TestMethod]
+    public void PalaceRoom_IsNamedByThePalaceNumberNotTheLocation()
+    {
+        // palaces swap places, so palace 5 can sit at the location of palace 1
+        var (location, _, _, _, _) = PalaceWith(1);
+        var palace = new Palace(5, true);
+        var boss = new Room { Name = "boss", IsBossRoom = true };
+        palace.AllRooms.Add(boss);
+        palace.BossRoom = boss;
+        location.Palace = palace;
+
+        GraphNodeIds.PalaceRoom(location, palace, boss).Should().Be("PALACE5:boss");
+        GraphNodeIds.PalaceCrystal(location).Should().Be("PALACE5:crystal");
+    }
+
+    [TestMethod]
+    public void PalaceRoom_NamesTheGreatPalaceWhereverItIs()
+    {
+        var (location, _, _, _, _) = PalaceWith(1);
+        var palace = new Palace(7, true);
+        var boss = new Room { Name = "boss", IsBossRoom = true };
+        palace.AllRooms.Add(boss);
+        palace.BossRoom = boss;
+        location.Palace = palace;
+
+        GraphNodeIds.PalaceRoom(location, palace, boss).Should().Be("GREAT_PALACE:boss");
+    }
 }

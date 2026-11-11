@@ -67,7 +67,7 @@ public class ApManifestTests
         var great = new Location(LocationID.EAST_GREAT_PALACE, 30, 5, 1, Continent.EAST) { Palace = new Palace(7, true) };
 
         ApManifestBuilder.PalaceCrystalEvents([swapped, great]).Should().ContainSingle().Which.Should().Be(new ApLocation(
-            "PALACE1:crystal", "Palace 3 crystal", ApFlagKind.Event, 0x078f, 0xff, 1));
+            "PALACE3:crystal", "Palace 3 crystal", ApFlagKind.Event, 0x078f, 0xff, 1));
     }
 
     [TestMethod]

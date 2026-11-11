@@ -259,7 +259,7 @@ public class ApYamlTests
         Location[] locations = [PalaceLocation(LocationID.WEST_PALACE1, 3), PalaceLocation(LocationID.WEST_PALACE3, 7),
             PalaceLocation(LocationID.EAST_GREAT_PALACE, 1)];
 
-        ApYamlBuilder.GreatPalaceBoss(locations).Should().Be("PALACE3:boss");
+        ApYamlBuilder.GreatPalaceBoss(locations).Should().Be("GREAT_PALACE:boss");
     }
 
     [TestMethod]
