@@ -20,3 +20,6 @@
 *.mlb
 /Statistics/Db/*.sqlite-shm
 /Statistics/Db/*.sqlite-wal
+
+# release build output
+/dist/
