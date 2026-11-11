@@ -124,7 +124,7 @@ public static partial class ApYamlBuilder
 
         // Archipelago fills the priority locations with progression items first
         var priorityIds = props.PrioritizePalaceItems
-            ? manifest.Locations.Where(l => rules[l.NodeId].Kind == GraphNodeKind.PalaceRoom)
+            ? manifest.Locations.Where(l => l.Kind != ApFlagKind.Event && rules[l.NodeId].Kind == GraphNodeKind.PalaceRoom)
                 .Select(l => l.NodeId).OrderBy(id => id, StringComparer.Ordinal).ToList()
             : [];
         sb.Append("  priority_locations: [").Append(string.Join(", ", priorityIds.Select(Key))).Append("]\n");

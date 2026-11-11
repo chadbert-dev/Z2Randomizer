@@ -218,7 +218,8 @@ public class ApYamlTests
     public void Build_PrioritizesThePalaceItemLocationsWhenAsked()
     {
         var manifest = Manifest() with { Locations = [.. Manifest().Locations,
-            new ApLocation("EAST_PALACE:room2", "Room", ApFlagKind.ItemPresence, 1560, 4, 0)] };
+            new ApLocation("EAST_PALACE:room2", "Room", ApFlagKind.ItemPresence, 1560, 4, 0),
+            new ApLocation("EAST_PALACE:crystal", "Crystal", ApFlagKind.Event, 0x078d, 0xff, 1)] };
         var routes = Routes();
         routes = routes with { Targets = [.. routes.Targets,
             new TargetAccess("EAST_PALACE:room2", "Room", GraphNodeKind.PalaceRoom, true, false, [new TargetRoute([], [])])] };
