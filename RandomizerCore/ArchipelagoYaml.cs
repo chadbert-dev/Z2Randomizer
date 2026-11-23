@@ -55,16 +55,6 @@ public static partial class ApYamlBuilder
         return $"{version.Major}.{version.Minor}.{version.Build}";
     }
 
-    /// <param name="hash">The hash shown on the file select screen of the ROM.</param>
-    /// <param name="randomizerVersion">The version of the randomizer that made the ROM.</param>
-    /// <param name="greatPalaceBossId">
-    /// The node id of the Great Palace's boss, such as "EAST_GREAT_PALACE:boss". It can be any palace's location when
-    /// the Great Palace is in the shuffle, since the palaces move between the locations.
-    /// </param>
-    /// <param name="fixedItems">
-    /// The items the randomizer placed itself in spots that are not Archipelago locations, because the player left
-    /// their kind of item out of the shuffle. Node id and item.
-    /// </param>
     /// <summary>The node id of the boss of the Great Palace, wherever the Great Palace ended up.</summary>
     public static string GreatPalaceBoss(IEnumerable<Location> locations)
     {
@@ -78,6 +68,17 @@ public static partial class ApYamlBuilder
         throw new ImpossibleException("No location holds the Great Palace");
     }
 
+    /// <summary>The text of the player YAML for the seed.</summary>
+    /// <param name="hash">The hash shown on the file select screen of the ROM.</param>
+    /// <param name="randomizerVersion">The version of the randomizer that made the ROM.</param>
+    /// <param name="greatPalaceBossId">
+    /// The node id of the Great Palace's boss, such as "EAST_GREAT_PALACE:boss". It can be any palace's location when
+    /// the Great Palace is in the shuffle, since the palaces move between the locations.
+    /// </param>
+    /// <param name="fixedItems">
+    /// The items the randomizer placed itself in spots that are not Archipelago locations, because the player left
+    /// their kind of item out of the shuffle. Node id and item.
+    /// </param>
     public static string Build(RandomizerProperties props, ApManifest manifest, RequirementRoutes routes, string hash, string randomizerVersion,
         string greatPalaceBossId, IReadOnlyList<(string NodeId, Collectable Item)> fixedItems)
     {
@@ -232,4 +233,46 @@ public static partial class ApYamlBuilder
     }
 
     private static string Key(string id) => PlainKey().IsMatch(id) ? id : Quoted(id);
+
+    /// <summary>
+    /// True when an existing YAML would be a second Z2R slot next to the new one: Archipelago makes a slot for every
+    /// YAML in its Players folder. That is a Z2R YAML for the same slot name, under any file name (this app names its
+    /// YAMLs Z2_seed_flags_ap.yaml, so an older one for the player has another file name). A Z2R YAML for another slot
+    /// name belongs to another player and stays, and so do YAMLs for other games.
+    /// </summary>
+    public static bool ReplacedBy(string existingFileName, string existingText, string newText)
+    {
+        if (TopLevelValue(existingText, "game") != GameName)
+        {
+            return false;
+        }
+        var name = TopLevelValue(existingText, "name");
+        return name != null && name == TopLevelValue(newText, "name");
+    }
+
+    // The value of a "key: value" line at the start of a line, without quotes, or null.
+    private static string? TopLevelValue(string yaml, string key)
+    {
+        foreach (var rawLine in yaml.Split('\n'))
+        {
+            var line = rawLine.TrimEnd('\r');
+            if (!line.StartsWith(key + ":", StringComparison.Ordinal))
+            {
+                continue;
+            }
+            var value = line[(key.Length + 1)..];
+            var comment = value.IndexOf(" #", StringComparison.Ordinal);
+            if (comment >= 0)
+            {
+                value = value[..comment];
+            }
+            value = value.Trim();
+            if (value.Length >= 2 && (value[0] == '"' || value[0] == '\'') && value[^1] == value[0])
+            {
+                value = value[1..^1];
+            }
+            return value;
+        }
+        return null;
+    }
 }

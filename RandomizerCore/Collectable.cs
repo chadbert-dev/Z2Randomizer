@@ -115,8 +115,17 @@ public static class CollectableExtensions
             _ => throw new Exception("Invalid item type determining itemgets")
         };
     }
-    public static string EnglishText(this Collectable collectable)
+    /// <summary>
+    /// The collectable's name for in-game text. With shortSpellNames (Archipelago seeds only), spells drop the
+    /// "$SPELL" suffix so the client has room on the sign and dialog lines. Other seeds keep the original text.
+    /// </summary>
+    public static string EnglishText(this Collectable collectable, bool shortSpellNames = false)
     {
+        if (shortSpellNames && collectable.IsSpell())
+        {
+            string name = collectable.EnglishText();
+            return name.EndsWith("$SPELL") ? name[..^"$SPELL".Length] : name;
+        }
         return collectable switch
         {
             Collectable.CANDLE => "CANDLE",

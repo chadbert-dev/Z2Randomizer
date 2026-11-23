@@ -516,7 +516,15 @@ public class Hyrule
             }*/
             if (props.ArchipelagoMode)
             {
-                ArchipelagoLogo.Apply(ROMData.rawdata);
+                if (!ArchipelagoLogo.Apply(ROMData.rawdata))
+                {
+                    // the AP item would be drawn from blank tiles; the seed still generates
+                    logger.Warn("Archipelago logo not written: the ROM's CHR data is too small to hold it, so AP items will have blank icons.");
+                }
+            }
+            if (ArchipelagoHintMark.Enabled(props))
+            {
+                ArchipelagoHintMark.Apply(ROMData.rawdata);
             }
             return new RandomizerResult(true, ROMData.rawdata, rom.debugfile, string.Join(Environment.NewLine, rom.messages.Select(x => x.ToString())));
         }
@@ -3138,6 +3146,9 @@ CustomFileSelectData:
         a.Set("_DO_SPELL_SHUFFLE_WIZARD_UPDATE", 1); // always on now, so starting spells can be replaced by minor items
         a.Set("SHUFFLED_SPELL_LIST", props.ShuffleSpellLocations ? 1 : 0);
         a.Assign("ENABLE_Z2_MARIO", props.MarioMode ? 1 : 0);
+        a.Set("ARCHIPELAGO_MODE", props.ArchipelagoMode ? 1 : 0);
+        a.Set("AP_ITEM_LEFT_TILE", ArchipelagoLogo.LeftTile);
+        a.Set("AP_ITEM_RIGHT_TILE", ArchipelagoLogo.RightTile);
         a.Code(Util.ReadResource("Z2Randomizer.RandomizerCore.Asm.FullItemShuffle.s"), "full_item_shuffle.s");
     }
     
@@ -3166,7 +3177,8 @@ HelmetHeadGoomaFix:
     jsr HelmetHeadGoomaFix
 
 .org $9b27
-; Also fix a key glitch
+; Also fix a key glitch. This is the vanilla crystal flag store (sta $078c,y); StatTracking.s sets the flag
+; by the post-shuffle palace number instead. ArchipelagoSeedTests checks these NOPs.
     nop
     nop
     nop
@@ -3612,6 +3624,8 @@ CustomMovingNpcDialog:
             a.Assign("ENABLE_Z2_MARIO", 1);
         if (props.FluteWarpMode == FluteWarpMode.CLEARED_PALACES)
             a.Assign("FLUTE_WARP_CLEARED_PALACES", 1);
+        if (ArchipelagoHintMark.Enabled(props))
+            a.Assign("HINT_MARKS", 1);
         a.Code(Util.ReadResource("Z2Randomizer.RandomizerCore.Asm.StatTracking.s"), "stat_tracking.s");
     }
 
@@ -3926,6 +3940,10 @@ FlagHudUpdate:
         if (props.ArchipelagoMode)
         {
             ArchipelagoSignature.Write(engine, props.ArchipelagoSlotName, props.Seed ?? "", SeedHash);
+            if (ArchipelagoHintMark.Enabled(props))
+            {
+                ArchipelagoHintMark.AddHooks(engine);
+            }
         }
         rom.FixMinibossGlitchyAppearance(engine);
         rom.FixBossKillPaletteGlitch(engine);

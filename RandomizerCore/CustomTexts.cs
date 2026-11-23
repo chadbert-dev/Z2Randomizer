@@ -791,7 +791,7 @@ public class CustomTexts
                     texts[index] = ArchipelagoSignPlaceholder((TownType)location.Town.Type!);
                     continue;
                 }
-                texts[index] = GenerateTownSignHint((Collectable)location.Town.GetWizard()!.Collectable!, linkedFire);
+                texts[index] = GenerateTownSignHint((Collectable)location.Town.GetWizard()!.Collectable!, linkedFire, props.ArchipelagoMode);
             }
         }
     }
@@ -928,19 +928,19 @@ public class CustomTexts
         bytes[^1] = (byte)town;
         return new Text(bytes);
     }
-    private static Text GenerateTownSignHint(Collectable spell, bool linkedFire)
+    private static Text GenerateTownSignHint(Collectable spell, bool linkedFire, bool shortSpellNames)
     {
-        string text = spell.EnglishText();
+        string text = spell.EnglishText(shortSpellNames);
         if(spell == Collectable.FIRE_SPELL && linkedFire)
         {
-            text = "FIRE!$SPELL";
+            text = shortSpellNames ? "FIRE!" : "FIRE!$SPELL"; // Archipelago seeds use the short spell names
         }
         text += "$town";
         return new Text(text);
     }
 
     private static Text GenerateTownsfolkText(List<Text> texts, Random r, TownType town, TownMap townMap,
-     bool useCommunityText, bool includeQuestItemsInShuffle)
+     bool useCommunityText, bool includeQuestItemsInShuffle, bool shortSpellNames = false)
     {
         Collectable collectable = townMap.Collectable ?? throw new Exception("Cannot generate hint for location with no collectable");
         switch (townMap.CollectableTextType)
@@ -966,26 +966,26 @@ public class CustomTexts
                     //Non community-text spells use the vanilla text corresponding to the spell you get.
                     return new Text(texts[wizardTextIndexesBySpell[collectable]].RawText);
                 }
-                return GenerateNonSpellTownsfolkText(collectable, r, useCommunityText);
+                return GenerateNonSpellTownsfolkText(collectable, r, useCommunityText, shortSpellNames);
             case CollectableTextType.BAGU:
-                return GenerateBaguText(collectable, r, useCommunityText, includeQuestItemsInShuffle)
+                return GenerateBaguText(collectable, r, useCommunityText, includeQuestItemsInShuffle, shortSpellNames)
                     ?? new Text(texts[baguTextIndex].RawText);
             case CollectableTextType.TABLE:
-                return GenerateMirrorTableText(collectable, r, useCommunityText, includeQuestItemsInShuffle)
+                return GenerateMirrorTableText(collectable, r, useCommunityText, includeQuestItemsInShuffle, shortSpellNames)
                     ?? new Text(texts[gotMirrorTextIndex].RawText);
             case CollectableTextType.FOUNTAIN:
-                return GenerateFountainText(collectable, r, useCommunityText, includeQuestItemsInShuffle)
+                return GenerateFountainText(collectable, r, useCommunityText, includeQuestItemsInShuffle, shortSpellNames)
                     ?? new Text(texts[gotWaterTextIndex].RawText);
             default:
                 throw new Exception("Unrecognized CollectableTextType while generating hint");
         }
     } 
 
-    private static Text? GenerateBaguText(Collectable baguItem, Random r, bool useCommunityText, bool includeQuestItemsInShuffle)
+    private static Text? GenerateBaguText(Collectable baguItem, Random r, bool useCommunityText, bool includeQuestItemsInShuffle, bool shortSpellNames)
     {
         if(includeQuestItemsInShuffle)
         {
-            return GenerateNonSpellTownsfolkText(baguItem, r, useCommunityText);
+            return GenerateNonSpellTownsfolkText(baguItem, r, useCommunityText, shortSpellNames);
         }
         else if(useCommunityText)
         {
@@ -993,13 +993,13 @@ public class CustomTexts
         }
         return null;
     }
-    private static Text? GenerateMirrorTableText(Collectable mirrorItem, Random r, bool useCommunityText, bool includeQuestItemsInShuffle)
+    private static Text? GenerateMirrorTableText(Collectable mirrorItem, Random r, bool useCommunityText, bool includeQuestItemsInShuffle, bool shortSpellNames)
     {
         if (includeQuestItemsInShuffle)
         {
             if (useCommunityText)
             {
-                return GenerateNonSpellTownsfolkText(mirrorItem, r, true);
+                return GenerateNonSpellTownsfolkText(mirrorItem, r, true, shortSpellNames);
             }
             else {
                 string rawText;
@@ -1010,11 +1010,11 @@ public class CustomTexts
         return null;
     }
 
-    private static Text? GenerateFountainText(Collectable fountainItem, Random r, bool useCommunityText, bool includeQuestItemsInShuffle)
+    private static Text? GenerateFountainText(Collectable fountainItem, Random r, bool useCommunityText, bool includeQuestItemsInShuffle, bool shortSpellNames)
     {
         if (includeQuestItemsInShuffle)
         {
-            return GenerateNonSpellTownsfolkText(fountainItem, r, useCommunityText);
+            return GenerateNonSpellTownsfolkText(fountainItem, r, useCommunityText, shortSpellNames);
         }
         return null;
     }
@@ -1226,7 +1226,7 @@ public class CustomTexts
             //don't let hints be for items in the same town
             while ((hintLocation.Town != null && hintLocation.Town?.Type?.VanillaTownOrder() - 1 == town)
              || placedTowns.Contains(town));
-            Text hint = Text.GenerateHelpfulHint(hintLocation, hintCollectable, props.HelpfulHints == HelpfulHintOption.TOWNS_SEPARATE, HELPFUL_HINTS_TREAT_BAGU_AS_TOWN);
+            Text hint = Text.GenerateHelpfulHint(hintLocation, hintCollectable, props.HelpfulHints == HelpfulHintOption.TOWNS_SEPARATE, HELPFUL_HINTS_TREAT_BAGU_AS_TOWN, props.ArchipelagoMode);
             int index = hintIndexes[town][r.Next(hintIndexes[town].Length)];
             switch (index)
             {
@@ -1332,10 +1332,6 @@ public class CustomTexts
         List<Text> vanillaTexts = new(texts);
         List<Text> usedTexts = [];
 
-        IEnumerable<Town> townsfolkCollectableTowns = itemLocs.Where(i => i.Town != null).Select(i => i.Town)!;
-        IEnumerable<TownMap> townsfolkCollectableMaps = itemLocs.Where(i => i.Town != null)
-            .SelectMany(i => i.Town!.TownMaps.Where(m => m.CollectableTextType != null));
-
         foreach (Location townLocation in itemLocs.Where(i => i.Town != null))
         {
             Town town = townLocation.Town!;
@@ -1346,7 +1342,7 @@ public class CustomTexts
                 int tries = 0;
                 do
                 {
-                    text = GenerateTownsfolkText(vanillaTexts, r, type, map, useCommunityText, includeQuestItemsInShuffle);
+                    text = GenerateTownsfolkText(vanillaTexts, r, type, map, useCommunityText, includeQuestItemsInShuffle, props?.ArchipelagoMode ?? false);
                 } while (useCommunityText && usedTexts.Contains(text) && tries++ < TOWNSFOLK_TEXT_ATTEMPT_LIMIT);
                 if(tries > TOWNSFOLK_TEXT_ATTEMPT_LIMIT)
                 {
@@ -1370,7 +1366,7 @@ public class CustomTexts
         }
     }
 
-    private static Text GenerateNonSpellTownsfolkText(Collectable collectable, Random r, bool useCommunityText)
+    private static Text GenerateNonSpellTownsfolkText(Collectable collectable, Random r, bool useCommunityText, bool shortSpellNames)
     {
         string collectableWizardText;
 
@@ -1383,7 +1379,7 @@ public class CustomTexts
             collectableWizardText = DEFAULT_WIZARD_COLLECTABLE;
         }
 
-        return new Text(collectableWizardText, collectable);
+        return new Text(collectableWizardText, collectable, shortSpellNames);
     }
 
     private static int TextLength(List<Text> texts)

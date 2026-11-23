@@ -297,9 +297,14 @@ Seed: {config.Seed}
             }
             if (moveOlderAside)
             {
-                // Archipelago makes a slot for every YAML in the folder, so an older Z2R YAML would be a second Z2R slot
+                // Archipelago makes a slot for every YAML in the folder, so an older Z2R YAML would be a second Z2R slot.
+                // It can have any file name if the player saved it with Save YAML, so this reads each one.
                 var previous = Path.Combine(folder, "previous");
-                foreach (var old in Directory.GetFiles(folder, "*_ap.yaml").Where(f => Path.GetFileName(f) != yamlName))
+                var olderZ2r = Directory.GetFiles(folder, "*.yaml").Concat(Directory.GetFiles(folder, "*.yml"))
+                    .Where(f => !string.Equals(Path.GetFileName(f), yamlName, StringComparison.OrdinalIgnoreCase))
+                    .Where(f => ApYamlBuilder.ReplacedBy(Path.GetFileName(f), ReadTextOrEmpty(f), yamlText))
+                    .ToList();
+                foreach (var old in olderZ2r)
                 {
                     Directory.CreateDirectory(previous);
                     File.Move(old, Path.Combine(previous, Path.GetFileName(old)), overwrite: true);
@@ -312,6 +317,19 @@ Seed: {config.Seed}
         catch (Exception e)
         {
             ProgressBody = $"Unable to save the YAML to {label}: {e.Message}";
+        }
+    }
+
+    // A YAML that can't be read is left where it is
+    private static string ReadTextOrEmpty(string path)
+    {
+        try
+        {
+            return File.ReadAllText(path);
+        }
+        catch (Exception)
+        {
+            return "";
         }
     }
 

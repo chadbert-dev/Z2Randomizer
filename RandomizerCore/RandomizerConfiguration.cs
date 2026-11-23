@@ -846,6 +846,14 @@ public sealed partial class RandomizerConfiguration() : INotifyPropertyChanged
     private bool prioritizePalaceItems = false;
 
     /// <summary>
+    /// Archipelago mode with helpful hints: a "?" over each town NPC whose helpful hint the player has not read.
+    /// On by default; the marks add a little CPU work to every town frame.
+    /// </summary>
+    [Reactive]
+    [IgnoreInFlags]
+    private bool hintMarkers = true;
+
+    /// <summary>
     /// The slot name from the player's Archipelago YAML, stored in the ROM. At most 16 characters.
     /// </summary>
     [Reactive]
@@ -1490,6 +1498,7 @@ public sealed partial class RandomizerConfiguration() : INotifyPropertyChanged
 
         properties.ArchipelagoMode = archipelagoMode;
         properties.PrioritizePalaceItems = prioritizePalaceItems;
+        properties.HintMarkers = hintMarkers;
         if (archipelagoMode)
         {
             if (ArchipelagoSignature.ValidateSlotName(archipelagoSlotName?.Trim()) is { } slotNameError)

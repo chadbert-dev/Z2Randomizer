@@ -560,7 +560,11 @@ ItemTileTable:
     .byte $f7, $f9 ; Thunder Spell
     .byte $cf, $92 ; Dash Spell
     .byte $00, $f5 ; Tanooki (never placed in a sideview)
-    .byte $a8, $c7 ; Archipelago item: left half of the logo ($a8, Link Doll tile) and right half ($c7, bank $68 slot, see ArchipelagoLogo)
+.if ARCHIPELAGO_MODE
+    .byte AP_ITEM_LEFT_TILE, AP_ITEM_RIGHT_TILE ; Archipelago item: the logo's two halves, both in bank $68 (see ArchipelagoLogo)
+.else
+    .byte $a8, $c7 ; Archipelago item (unused outside Archipelago mode): same bytes as before Archipelago mode drew the logo
+.endif
 
 ; In vanilla this table is limited only to the 6 items in $10-$16
 ; We can keep the first $10 items using the original, and just expand the rest
@@ -590,4 +594,8 @@ ItemPaletteTable:
     .byte $01 ; Thunder Spell
     .byte $01 ; Dash Spell
     .byte $01 ; Tanooki
-    .byte $03 ; Archipelago item
+.if ARCHIPELAGO_MODE
+    .byte $01 ; Archipelago item (palette 1; 2 and 3 are enemy palettes)
+.else
+    .byte $03 ; Archipelago item (unused outside Archipelago mode)
+.endif

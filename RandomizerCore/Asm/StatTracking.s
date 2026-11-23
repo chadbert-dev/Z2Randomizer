@@ -122,8 +122,9 @@ SaveTimestampForPalace:
     dec $0794
     jsr FlagHudUpdate
     ldy PalaceNumber
-    ; The vanilla code that sets the crystal placed flag is skipped by this hook, so set it here. The flag is
-    ; indexed by the post-shuffle palace number, and the Archipelago events read it.
+    ; Vanilla sets the crystal placed flag with "sta $078c,y" at $9B27, which the randomizer replaces with NOPs
+    ; (HelmetHeadGoomaFix in Hyrule.cs), so set it here. The flag is indexed by the post-shuffle palace number,
+    ; and the Archipelago events read it.
     cpy #7
     bcs @SkipCrystalFlag ; the Great Palace has no crystal
         lda #1
@@ -384,6 +385,32 @@ SetNewSaveFile:
     sta $0725 ; sets the next screen to draw
     sta StatTrackingSaveFileClear ; nonzero = new file, 0 = old file
     rts
+
+.ifdef HINT_MARKS
+; Archipelago: the Register screen writes each letter of a file's name at $B8BF (lda $bd75,x / sta ($00),y), with
+; $19 = the file being named (0-2). A file being named is a new game, so forget the hints read in whatever game that
+; slot held. This clears only that file's mask: the one flag above covers every file, so the next file loaded is not
+; necessarily the one just registered, and its marks must survive.
+.org $B8BF
+    jsr ClearHintsReadForNamedFile
+
+.reloc
+ClearHintsReadForNamedFile:
+    lda $bd75,x         ; the instruction the hook replaced: the letter to store
+    pha
+    txa
+    pha
+    ldx $19
+    cpx #3
+    bcs @Done
+        lda #0
+        sta HintsReadMask,x
+@Done:
+    pla
+    tax
+    pla
+    rts
+.endif
 
 ; Patch a few save/load locations in the game to also update the timestamp checkpoints
 .org $B931

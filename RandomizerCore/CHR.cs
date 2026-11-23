@@ -165,6 +165,7 @@ public static class CHR
     public static readonly SpriteTile[] CrossTiles = [new(CROSS, 1, 2, [(0, 0)])];
     public static readonly SpriteTile[] HammerTiles = [new(HAMMER, 1, 2, [(0, 0)])];
     public static readonly SpriteTile[] MagicKeyTiles = [new(MAGIC_KEY, 1, 2, [(0, 0)])];
+    public static readonly SpriteTile[] ArchipelagoTiles = [new(ArchipelagoLogo.LeftHalfChrOffset, 1, 2, [(0, 0)]), new(ArchipelagoLogo.RightHalfChrOffset, 1, 2, [(1, 0, flipH: true)])];
     public static readonly SpriteTile[] OneUpTiles = [new(ONEUP, 1, 2, [(0, 0)])];
 
     public static readonly Dictionary<Collectable, SpriteTile[]> COLLECTABLE_TILES = new()
@@ -199,7 +200,7 @@ public static class CHR
         { Collectable.JUMP_SPELL, JumpTiles },
         //Too lazy to make this real for now. It can just be jump.
         { Collectable.TANOOKI, JumpTiles },
-        { Collectable.AP_ITEM, OneUpTiles },
+        { Collectable.AP_ITEM, ArchipelagoTiles },
         { Collectable.LIFE_SPELL, LifeTiles },
         { Collectable.FAIRY_SPELL, FairyTiles },
         { Collectable.FIRE_SPELL, FireTiles },

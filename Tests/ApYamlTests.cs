@@ -298,4 +298,45 @@ public class ApYamlTests
 
         act.Should().Throw<ImpossibleException>();
     }
+
+    private const string NewYaml = "name: \"Gob-Z2R\"\ngame: Z2R\nrequires:\n";
+
+    [TestMethod]
+    [DataRow("Z2_1_FLAGS_ap.yaml", "name: Gob-Z2R\ngame: Z2R\n", true)]     // made by this app for this slot
+    [DataRow("Z2_1_FLAGS_ap.yaml", "name: Someone\ngame: Z2R\n", false)]    // made by this app, but another player's slot
+    [DataRow("Gob-Z2R.yaml", "name: \"Gob-Z2R\"\ngame: Z2R\n", true)]      // saved under another file name
+    [DataRow("Gob-Z2R.yml", "name: Gob-Z2R # me\r\ngame: 'Z2R'\r\n", true)]
+    [DataRow("Friend.yaml", "name: Friend\ngame: Z2R\n", false)]           // another player's Z2R slot
+    [DataRow("Gob-ZORA.yaml", "name: \"Gob-Z2R\"\ngame: \"ZORA\"\n", false)] // another game
+    [DataRow("Z2_1_FLAGS_ap.yaml", "name: Someone\ngame: ZORA\n", false)]
+    [DataRow("Notes.yaml", "just text", false)]
+    public void ReplacedBy_OnlyOlderZ2rYamlsForThisSlot(string fileName, string existing, bool expected)
+    {
+        ApYamlBuilder.ReplacedBy(fileName, existing, NewYaml).Should().Be(expected);
+    }
+
+    [TestMethod]
+    public void ReplacedBy_IgnoresIndentedKeys()
+    {
+        // only top-level keys count: "game" under an option block is not the YAML's game
+        ApYamlBuilder.ReplacedBy("Other.yaml", "name: Gob-Z2R\nZORA:\n  game: Z2R\n", NewYaml).Should().BeFalse();
+    }
+
+    [TestMethod]
+    public void Spoiler_LeavesOutEmptyArchipelagoSlotMaps()
+    {
+        var json = System.Text.Json.JsonSerializer.Serialize(new RandomizerProperties(), SourceGenerationContext.Default.RandomizerProperties);
+        json.Should().NotContain("ArchipelagoSpellHintSlots").And.NotContain("ArchipelagoItemTextSlots");
+    }
+
+    [TestMethod]
+    public void Spoiler_WritesTheArchipelagoSlotMapsWhenSet()
+    {
+        var props = new RandomizerProperties();
+        props.ArchipelagoSpellHintSlots[Collectable.TROPHY] = 12;
+        props.ArchipelagoItemTextSlots["WEST_TOWN_RAURU:wizard"] = (34, 0);
+        var json = System.Text.Json.JsonSerializer.Serialize(props, SourceGenerationContext.Default.RandomizerProperties);
+        json.Should().Contain("\"ArchipelagoSpellHintSlots\":{\"")
+            .And.Contain("\"ArchipelagoItemTextSlots\":{\"WEST_TOWN_RAURU:wizard\":[34,0]}");
+    }
 }

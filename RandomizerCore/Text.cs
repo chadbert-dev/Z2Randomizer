@@ -41,12 +41,12 @@ public class Text : IEquatable<Text>
         EncodedText = Util.ToGameText(text, true);
     }
 
-    public Text(string text, Collectable collectable)
+    public Text(string text, Collectable collectable, bool shortSpellNames = false)
     {
         RawText = text;
         if (RawText.Contains("%%"))
         {
-            RawText = RawText.Replace("%%", collectable.EnglishText());
+            RawText = RawText.Replace("%%", collectable.EnglishText(shortSpellNames));
         }
         else if (RawText.Contains('%'))
         {
@@ -85,9 +85,9 @@ public class Text : IEquatable<Text>
         return true;
     }
 
-    public static Text GenerateHelpfulHint(Location location, Collectable collectable, bool useTownSpecificHints, bool baguIsTown)
+    public static Text GenerateHelpfulHint(Location location, Collectable collectable, bool useTownSpecificHints, bool baguIsTown, bool shortSpellNames = false)
     {
-        return new Text(HelpfulHintPlace(location, useTownSpecificHints, baguIsTown) + "%%", collectable);
+        return new Text(HelpfulHintPlace(location, useTownSpecificHints, baguIsTown) + "%%", collectable, shortSpellNames);
     }
 
     /// <summary>The start of a helpful hint for an item at this location, such as "go west to$find the$".</summary>

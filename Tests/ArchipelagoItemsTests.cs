@@ -37,6 +37,18 @@ public class ArchipelagoItemsTests
     }
 
     [TestMethod]
+    public void EnglishText_ShortSpellNamesOnlyWhenAsked()
+    {
+        // non-Archipelago seeds keep the original text; Archipelago seeds drop the "$SPELL" suffix
+        Collectable.JUMP_SPELL.EnglishText().Should().Be("JUMP$SPELL");
+        Collectable.SPELL_SPELL.EnglishText().Should().Be("SPELL$SPELL");
+        Collectable.JUMP_SPELL.EnglishText(true).Should().Be("JUMP");
+        Collectable.SPELL_SPELL.EnglishText(true).Should().Be("SPELL");
+        Collectable.TANOOKI.EnglishText(true).Should().Be("TANOOKI$SUIT");
+        Collectable.CANDLE.EnglishText(true).Should().Be("CANDLE");
+    }
+
+    [TestMethod]
     public void Apply_ReplacesEveryItemInOverworldLocations_IncludingSmallItems()
     {
         var hammer = new Location(LocationID.DM_HAMMER_CAVE, 40, 10, 1, Continent.DM);

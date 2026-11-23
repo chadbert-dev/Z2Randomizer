@@ -29,6 +29,13 @@
             >
                 <ToolTip.Tip><TextBlock Text="{x:Static lang:Resources.PrioritizePalaceItemsToolTip}"/></ToolTip.Tip>
             </CheckBox>
+            <CheckBox
+                IsVisible="{Binding Config.ArchipelagoMode}"
+                IsChecked="{Binding Config.HintMarkers}"
+                Content="Hint Markers"
+            >
+                <ToolTip.Tip><TextBlock Text="{x:Static lang:Resources.HintMarkersToolTip}"/></ToolTip.Tip>
+            </CheckBox>
             <StackPanel IsVisible="{Binding Config.ArchipelagoMode}" Margin="17 6 17 0">
                 <Button Content="Export YAML only (no ROM)" Command="{Binding RandomizerViewModel.ExportYaml}" HorizontalAlignment="Left">
                     <ToolTip.Tip><TextBlock Text="Builds the seed without saving a ROM and saves just the Archipelago YAML, wherever you choose."/></ToolTip.Tip>
