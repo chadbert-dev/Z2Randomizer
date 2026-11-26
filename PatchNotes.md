@@ -9,6 +9,7 @@
 - Added "YAML to Downloads" and "YAML to Players" buttons next to it (desktop only). They save the YAML in one click to your Downloads folder or to Archipelago's default Players folder (`C:\ProgramData\Archipelago\Players` on Windows).
 - Added an "Export YAML" button on the Archipelago tab. It builds the seed without saving a ROM and saves just the Archipelago YAML to a place you pick. The YAML holds the seed's locations and rules, so the seed has to be built first.
 - Spell Item Hints work in Archipelago Mode: the hint for a spell item that Archipelago places (trophy, medicine, kid, mirror, water, downstab, upstab) is left for the Archipelago client to fill in with where the item landed. The YAML lists these hints as `spell_hint_slots`.
+- Fixed a soft lock in Archipelago Mode where receiving an item while a crystal was being placed in a palace statue left Link frozen with no refill.
 
 ## Version 5.2.5 - October 24, 2026
 

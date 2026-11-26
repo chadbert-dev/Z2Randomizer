@@ -18,11 +18,14 @@ public class ArchipelagoSeedTests
     private const string SlotName = "Tester";
 
     // SHA-256 of the ROMs these tests build. The non-AP hash is the ROM from origin/ap cbf42700 (AP work must not
-    // change non-AP seeds); the AP hash is this branch with hint marks and short spell names. A change that alters them changes every seed made
+    // change non-AP seeds); the AP hash is this branch with hint marks, short spell names and the crystal fanfare wait. A change that alters them changes every seed made
     // with these settings: for an Archipelago seed that breaks a multiworld already generated from the old ROM. If
     // the change is meant to alter the ROM, say so in the commit and update the hash.
     private const string NonApRomSha256 = "CCDC037FDA36A900FD753850E2D6C9EC93C54DE2432CFAE1668C1E48CC249BC1";
-    private const string ApRomSha256 = "130FB4D0E8A4F7AE623452B0B75831CFB58F2CDCF9AA5021790433891D0403CC";
+    private const string ApRomSha256 = "FAF50230C9BB3AE99927A272BB4E431EF636D7B9D8E537D4E04BBA5B3CCDAC6A";
+
+    // PRG bank 4 $9B47, where the crystal statue waits for the fanfare with "ldy $07fb"
+    private const int CrystalFanfareWait = 16 + 4 * 0x4000 + (0x9B47 - 0x8000);
 
     // PRG bank 4 $9B27, where vanilla sets the crystal placed flag with "sta $078c,y"
     private const int CrystalFlagStore = 16 + 4 * 0x4000 + (0x9B27 - 0x8000);
@@ -158,6 +161,28 @@ public class ArchipelagoSeedTests
         var (rom, _) = Built(archipelago);
         vanilla!.AsSpan(CrystalFlagStore, 3).ToArray().Should().Equal(0x99, 0x8c, 0x07);
         rom.AsSpan(CrystalFlagStore, 3).ToArray().Should().Equal(0xea, 0xea, 0xea);
+    }
+
+    // The client requests music while the game runs, so an Archipelago seed waits for the crystal fanfare ($40) only,
+    // not for all music to stop (Asm/CrystalFanfare.s)
+    [TestMethod]
+    public void ApSeed_WaitsOnlyForTheCrystalFanfare()
+    {
+        var (rom, _) = Built(archipelago: true);
+        rom[CrystalFanfareWait].Should().Be(0x20); // jsr
+        int target = rom[CrystalFanfareWait + 1] | rom[CrystalFanfareWait + 2] << 8;
+        // the routine is relocated into bank 4 or the fixed bank
+        int bank = target >= 0xC000 ? 7 : 4;
+        // lda $07fb, and #$40, tay, rts
+        rom.AsSpan(16 + bank * 0x4000 + (target & 0x3FFF), 7).ToArray()
+            .Should().Equal(0xad, 0xfb, 0x07, 0x29, 0x40, 0xa8, 0x60);
+    }
+
+    [TestMethod]
+    public void NonApSeed_KeepsTheVanillaCrystalFanfareWait()
+    {
+        var (rom, _) = Built(archipelago: false);
+        rom.AsSpan(CrystalFanfareWait, 3).ToArray().Should().Equal(0xac, 0xfb, 0x07);
     }
 
     // The bytes of a text, found the way the Archipelago client (worlds/z2r/Client.py) finds them: the west and east

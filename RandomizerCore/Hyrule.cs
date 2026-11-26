@@ -3940,6 +3940,8 @@ FlagHudUpdate:
         if (props.ArchipelagoMode)
         {
             ArchipelagoSignature.Write(engine, props.ArchipelagoSlotName, props.Seed ?? "", SeedHash);
+            // The client writes music requests, which must not stall the crystal placement
+            engine.Module().Code(Util.ReadResource("Z2Randomizer.RandomizerCore.Asm.CrystalFanfare.s"), "crystal_fanfare.s");
             if (ArchipelagoHintMark.Enabled(props))
             {
                 ArchipelagoHintMark.AddHooks(engine);
