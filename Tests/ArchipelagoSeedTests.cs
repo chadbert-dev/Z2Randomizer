@@ -18,11 +18,11 @@ public class ArchipelagoSeedTests
     private const string SlotName = "Tester";
 
     // SHA-256 of the ROMs these tests build. The non-AP hash is the ROM from origin/ap cbf42700 (AP work must not
-    // change non-AP seeds); the AP hash is this branch with hint marks, short spell names and the crystal fanfare wait. A change that alters them changes every seed made
+    // change non-AP seeds); the AP hash is this branch with hint marks, short spell names, the crystal fanfare wait and item times. A change that alters them changes every seed made
     // with these settings: for an Archipelago seed that breaks a multiworld already generated from the old ROM. If
     // the change is meant to alter the ROM, say so in the commit and update the hash.
     private const string NonApRomSha256 = "CCDC037FDA36A900FD753850E2D6C9EC93C54DE2432CFAE1668C1E48CC249BC1";
-    private const string ApRomSha256 = "FAF50230C9BB3AE99927A272BB4E431EF636D7B9D8E537D4E04BBA5B3CCDAC6A";
+    private const string ApRomSha256 = "FB91D585B0E25791C79D1F35A3D168BE3C1868A95068E6F726CB235002926185";
 
     // PRG bank 4 $9B47, where the crystal statue waits for the fanfare with "ldy $07fb"
     private const int CrystalFanfareWait = 16 + 4 * 0x4000 + (0x9B47 - 0x8000);
@@ -183,6 +183,22 @@ public class ArchipelagoSeedTests
     {
         var (rom, _) = Built(archipelago: false);
         rom.AsSpan(CrystalFanfareWait, 3).ToArray().Should().Equal(0xac, 0xfb, 0x07);
+    }
+
+    // The client flags the items it gives in a mailbox that the gameplay NMI reads (Asm/StatTracking.s)
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public void Seed_ReadsTheItemTimeMailboxOnlyWhenArchipelago(bool archipelago)
+    {
+        var (rom, _) = Built(archipelago);
+        int FixedBank(int cpu) => 16 + 7 * 0x4000 + (cpu - 0xc000);
+        rom[FixedBank(0xc07a)].Should().Be(0x20); // jsr
+        int target = rom[FixedBank(0xc07b)] | rom[FixedBank(0xc07c)] << 8;
+        target.Should().BeGreaterThanOrEqualTo(0xc000);
+        // lda $01bc
+        bool readsMailbox = rom.AsSpan(FixedBank(target), 3).SequenceEqual(new byte[] { 0xad, 0xbc, 0x01 });
+        readsMailbox.Should().Be(archipelago);
     }
 
     // The bytes of a text, found the way the Archipelago client (worlds/z2r/Client.py) finds them: the west and east

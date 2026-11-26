@@ -286,6 +286,7 @@ Nmi:
     bpl NmiHandleLagFrame ; run audio or check for lag frame
     bvc NmiRunTitleScreen
     pha
+.assert * = $c07a ; StatTracking.s hooks this call in Archipelago mode
     jsr IncStatTimer
     lda #0
     sta PreventDoubleLag
@@ -323,6 +324,7 @@ IncStatTimerTitle:
 ; This is cleared when a new save file is loaded for the first time
 .reloc
 IncStatTimer:
+.export IncStatTimer
     bit GameComplete
     bpl @RunTimers
         rts

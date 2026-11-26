@@ -9,11 +9,20 @@ public class ArchipelagoSignatureTests
     [TestMethod]
     public void Build_ThenParse_RoundTrips()
     {
-        byte[] block = ArchipelagoSignature.Build("Link_Player 1", "458667598", -123456);
+        byte[] block = ArchipelagoSignature.Build("Link_Player 1", "458667598", -123456, itemTimes: true);
 
         block.Should().HaveCount(ArchipelagoSignature.Size);
         block[..4].Should().Equal("Z2AP"u8.ToArray());
+        block[4].Should().Be(ArchipelagoSignature.Version);
+        // the client only flags items for the stats screen when the ROM says it reads them
+        block[ArchipelagoSignature.FeaturesOffset].Should().Be(ArchipelagoSignature.ItemTimesFeature);
         ArchipelagoSignature.Parse(block).Should().Be(("Link_Player 1", "458667598", -123456));
+    }
+
+    [TestMethod]
+    public void Build_WithoutItemTimes_LeavesTheFeatureByteEmpty()
+    {
+        ArchipelagoSignature.Build("slot", "1", 0, itemTimes: false)[ArchipelagoSignature.FeaturesOffset].Should().Be(0);
     }
 
     [TestMethod]
@@ -21,7 +30,7 @@ public class ArchipelagoSignatureTests
     {
         string name = new('x', 16);
 
-        ArchipelagoSignature.Parse(ArchipelagoSignature.Build(name, "1", 0))!.Value.SlotName.Should().Be(name);
+        ArchipelagoSignature.Parse(ArchipelagoSignature.Build(name, "1", 0, itemTimes: false))!.Value.SlotName.Should().Be(name);
     }
 
     [TestMethod]
@@ -29,7 +38,7 @@ public class ArchipelagoSignatureTests
     {
         string seed = new string('1', 40);
 
-        var parsed = ArchipelagoSignature.Parse(ArchipelagoSignature.Build("slot", seed, 5))!.Value;
+        var parsed = ArchipelagoSignature.Parse(ArchipelagoSignature.Build("slot", seed, 5, itemTimes: false))!.Value;
 
         parsed.Seed.Should().Be(new string('1', 32));
         parsed.SeedHash.Should().Be(5);
@@ -38,7 +47,7 @@ public class ArchipelagoSignatureTests
     [TestMethod]
     public void Build_ReplacesNonAsciiSeedCharacters()
     {
-        ArchipelagoSignature.Parse(ArchipelagoSignature.Build("slot", "sé€d", 0))!.Value.Seed.Should().Be("s??d");
+        ArchipelagoSignature.Parse(ArchipelagoSignature.Build("slot", "sé€d", 0, itemTimes: false))!.Value.Seed.Should().Be("s??d");
     }
 
     [TestMethod]
@@ -53,7 +62,7 @@ public class ArchipelagoSignatureTests
         ArchipelagoSignature.ValidateSlotName(name).Should().NotBeNull();
         if (name != null && name.Trim().Length > 0)
         {
-            var act = () => ArchipelagoSignature.Build(name, "1", 0);
+            var act = () => ArchipelagoSignature.Build(name, "1", 0, itemTimes: false);
             act.Should().Throw<UserFacingException>();
         }
     }

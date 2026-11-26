@@ -3626,6 +3626,8 @@ CustomMovingNpcDialog:
             a.Assign("FLUTE_WARP_CLEARED_PALACES", 1);
         if (ArchipelagoHintMark.Enabled(props))
             a.Assign("HINT_MARKS", 1);
+        if (ArchipelagoSignature.TimesItems(props))
+            a.Assign("AP_ITEM_TIMES", 1);
         a.Code(Util.ReadResource("Z2Randomizer.RandomizerCore.Asm.StatTracking.s"), "stat_tracking.s");
     }
 
@@ -3939,7 +3941,8 @@ FlagHudUpdate:
         rom.FixItemPickup(engine);
         if (props.ArchipelagoMode)
         {
-            ArchipelagoSignature.Write(engine, props.ArchipelagoSlotName, props.Seed ?? "", SeedHash);
+            ArchipelagoSignature.Write(engine, props.ArchipelagoSlotName, props.Seed ?? "", SeedHash,
+                ArchipelagoSignature.TimesItems(props));
             // The client writes music requests, which must not stall the crystal placement
             engine.Module().Code(Util.ReadResource("Z2Randomizer.RandomizerCore.Asm.CrystalFanfare.s"), "crystal_fanfare.s");
             if (ArchipelagoHintMark.Enabled(props))

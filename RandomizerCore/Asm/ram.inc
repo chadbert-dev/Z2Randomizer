@@ -562,6 +562,11 @@ TimestampId TsTowns
 
 ;; NEW VARIABLE ALLOCATIONS
 ; Stack RAM
+; Archipelago: the client sets bit N when it gives the item with timestamp type N, and the ROM records the time
+; (ApTimeReceivedItems in StatTracking.s). A fixed address so that nothing else moves: it is above everything
+; allocated below (mario's variables end before $01bd) and ClearStackRAM zeroes it at reset. Client.py writes it.
+ApStatMailbox = $01bc
+
 StackRAMBase = $0120
 SET_RES_BASE StackRAMBase
 RESV temp_room_code ; , $0120

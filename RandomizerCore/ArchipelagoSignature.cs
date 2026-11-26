@@ -29,11 +29,20 @@ public static class ArchipelagoSignature
     public const int Version = 1;
     public const int MaxSlotNameLength = 16;
     public const int MaxSeedLength = 32;
+    /// <summary>The byte after the version tells the client what else the ROM can do.</summary>
+    public const int FeaturesOffset = 0x05;
+    /// <summary>The ROM times the items flagged in ApStatMailbox for the stats screen (Asm/StatTracking.s).</summary>
+    public const byte ItemTimesFeature = 0x01;
 
     private const int SlotNameOffset = 0x08;
     private const int SeedOffset = 0x18;
     private const int SeedHashOffset = 0x38;
     private static readonly byte[] Magic = "Z2AP"u8.ToArray();
+
+    /// <summary>
+    /// Whether the ROM times the items the client gives. Mario mode leaves too little room in the fixed bank.
+    /// </summary>
+    public static bool TimesItems(RandomizerProperties props) => props.ArchipelagoMode && !props.MarioMode;
 
     /// <summary>
     /// Why a slot name can't be used, or null if it can. Names must be 1 to 16 characters of printable ASCII.
@@ -55,7 +64,7 @@ public static class ArchipelagoSignature
         return null;
     }
 
-    public static byte[] Build(string slotName, string seed, int seedHash)
+    public static byte[] Build(string slotName, string seed, int seedHash, bool itemTimes)
     {
         if (ValidateSlotName(slotName) is { } error)
         {
@@ -64,6 +73,7 @@ public static class ArchipelagoSignature
         byte[] block = new byte[Size];
         Magic.CopyTo(block, 0);
         block[4] = Version;
+        block[FeaturesOffset] = itemTimes ? ItemTimesFeature : (byte)0;
         Encoding.ASCII.GetBytes(slotName).CopyTo(block, SlotNameOffset);
         // seeds can be any text, but only ASCII fits; anything else is replaced so the length stays the same
         string asciiSeed = new string(seed.Select(c => c >= ' ' && c <= '~' ? c : '?').ToArray());
@@ -85,11 +95,11 @@ public static class ArchipelagoSignature
     }
 
     /// <summary>Writes the block into the fixed bank at <see cref="CpuAddress"/>.</summary>
-    public static void Write(Assembler asm, string slotName, string seed, int seedHash)
+    public static void Write(Assembler asm, string slotName, string seed, int seedHash, bool itemTimes)
     {
         var a = asm.Module();
         a.Segment("PRG7");
         a.Org(CpuAddress);
-        a.Byt(Build(slotName, seed, seedHash));
+        a.Byt(Build(slotName, seed, seedHash, itemTimes));
     }
 }

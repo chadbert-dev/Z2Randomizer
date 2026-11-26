@@ -254,6 +254,12 @@ ClearSRAMStart = RES_OFFSET
 
 .assert RES_OFFSET + StatTrackingBase < $7800
 
+; Archipelago: when each timed item was first received, 3 bytes per item, not checkpointed so a reset keeps them.
+; Not a RESV, so nothing reserved after this point moves.
+AP_TIMED_ITEMS = 8
+ApFirstItemTimes = StatTrackingBase + RES_OFFSET
+.assert RES_OFFSET + StatTrackingBase + AP_TIMED_ITEMS * 3 <= $7800
+
 .ifdef ENABLE_Z2_MARIO
 SET_RES_BASE $6FB0
 ; There isn't a general purpose "attribute" mix so we can make our own

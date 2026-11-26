@@ -239,6 +239,97 @@ AddTimestamp:
   inc TimestampCount
   rts
 
+.ifdef AP_ITEM_TIMES
+; Archipelago: the client gives items by writing the inventory, which skips CheckAddItemTimestamp, so it also flags
+; them in ApStatMailbox and the time is recorded here. This runs in the gameplay NMI, where the rest of the game runs,
+; so it can't interrupt another AddTimestamp.
+.import IncStatTimer
+
+.org $c07a ; jsr IncStatTimer (MMC5.s)
+    jsr ApTimeReceivedItems
+
+.reloc
+ApTimeReceivedItems:
+    lda ApStatMailbox
+    beq @Exit
+        ldx #0
+        stx ApStatMailbox
+        bit GameComplete
+        bmi @Exit ; the timers have stopped
+        dex
+    @Loop:
+            inx
+            lsr
+            bcc @Next
+                pha
+                    jsr ApTimeItem
+                pla
+        @Next:
+            bne @Loop
+@Exit:
+    jmp IncStatTimer
+
+; X = timestamp type, preserved. Adds it to the list unless it is there already, with the time it was first received:
+; a reset rolls the list back, and the client gives the item again. TimestampTypeList is in the order received, but
+; TimestampList (and the first time table) are indexed by type.
+.reloc
+ApTimeItem:
+    ldy TimestampCount
+    beq @NotListed
+    txa
+@Search:
+        cmp TimestampTypeList-1,y
+        beq @Done
+        dey
+        bne @Search
+@NotListed:
+    ldy TimestampCount
+    cpy #TS_COUNT
+    bcs @Done
+    txa
+    pha
+        ldy ApTimeOffsets,x
+        lda ApFirstItemTimes+0,y
+        ora ApFirstItemTimes+1,y
+        ora ApFirstItemTimes+2,y
+        beq @FirstTime
+            txa
+            ldx TimestampCount
+            sta TimestampTypeList,x
+            lda ApFirstItemTimes+0,y
+            sta TimestampList+0,y
+            lda ApFirstItemTimes+1,y
+            sta TimestampList+1,y
+            lda ApFirstItemTimes+2,y
+            sta TimestampList+2,y
+            inc TimestampCount
+            bne @Restore ; unconditional
+    @FirstTime:
+        tya
+        pha
+            txa
+            jsr AddTimestamp
+        pla
+        tay
+        lda TimestampList+0,y
+        sta ApFirstItemTimes+0,y
+        lda TimestampList+1,y
+        sta ApFirstItemTimes+1,y
+        lda TimestampList+2,y
+        sta ApFirstItemTimes+2,y
+@Restore:
+    pla
+    tax
+@Done:
+    rts
+
+; 3 * type, for the 3 byte entries of the first time table and the timestamp list
+.reloc
+ApTimeOffsets:
+    .byte 0, 3, 6, 9, 12, 15, 18, 21
+.assert AP_TIMED_ITEMS = 8
+.endif
+
 .reloc
 UpdateCreditsSwitchBank:
     ; This is a bit lame, but while we have BANK5 banked in,
@@ -360,6 +451,13 @@ CheckIfNewSaveFile:
             dey
             bne @loop
         sta StatTrackingSaveFileClear
+.ifdef AP_ITEM_TIMES
+        ldy #AP_TIMED_ITEMS * 3 ; A is still 0
+    @clearItemTimes:
+            sta ApFirstItemTimes-1,y
+            dey
+            bne @clearItemTimes
+.endif
 @skip:
 .ifdef ENABLE_Z2_MARIO
     ; also play a coin sfx when entering the file
